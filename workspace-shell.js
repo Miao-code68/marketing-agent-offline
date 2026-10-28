@@ -173,5 +173,5 @@ const wbInnerRender=renderAssistant;renderAssistant=function(){wbInnerRender();w
 R.invoke('wb-smart-publish',()=>{sessionStorage.setItem('open-smart-publish','1');location.hash='ad-agent';render();});
 R.invoke('wb-intelligent-publish',()=>{sessionStorage.setItem('open-intelligent-publish','1');location.hash='ad-agent';render();});
 render();
-const apfStyle=document.createElement('link');apfStyle.rel='stylesheet';apfStyle.href='/ad-publish-flow.css';document.head.append(apfStyle);
-const apfScript=document.createElement('script');apfScript.src='/ad-publish-flow.js';document.body.append(apfScript);
+const apfStyle=document.createElement('link');apfStyle.rel='stylesheet';apfStyle.href=new URL('ad-publish-flow.css',document.baseURI).href;document.head.append(apfStyle);
+const apfScript=document.createElement('script');apfScript.src=new URL('ad-publish-flow.js',document.baseURI).href;document.body.append(apfScript);

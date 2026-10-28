@@ -334,7 +334,7 @@ function vwMaterialRows(){const assets=typeof caRows==='function'?caRows().filte
 function vwMaterialPreview(row){if(row.poster)return `<img src="${E(row.poster)}" alt="${E(row.title)}">`;if(typeof caThumb==='function'&&!row.file)return caThumb(row);return '<span class="vw-material-placeholder">▶</span>';}
 function vwCreateDemoVideo(c,run){
  run.status='running';run.message=run.demoRunningMessage||'正在根据选中的脚本生成演示视频…';vwSave();if(chat()===c)renderAssistant();
- setTimeout(()=>{if(!vwBusy(run))return;run.status='completed';run.message=run.demoCompleteMessage||'视频已经生成，可以直接预览或下载。';run.result={summary:'',segments:[],scripts:[],questions:[],project_url:'',video_url:'/demo-generated-video.mp4',task_ids:[]};if(run.whiteReplacement){const blueprint=c.videoWorkflow?.runs.find(item=>item.localId===c.videoWorkflow.whiteBlueprintRun);if(blueprint){blueprint.whiteStage=4;blueprint.message='白模蓝图已确认并完成主体替换，本次蓝图可以继续复用。';}}vwSave();if(chat()===c)renderAssistant();},1100);
+ setTimeout(()=>{if(!vwBusy(run))return;run.status='completed';run.message=run.demoCompleteMessage||'视频已经生成，可以直接预览或下载。';run.result={summary:'',segments:[],scripts:[],questions:[],project_url:'',video_url:'demo-generated-video.mp4',task_ids:[]};if(run.whiteReplacement){const blueprint=c.videoWorkflow?.runs.find(item=>item.localId===c.videoWorkflow.whiteBlueprintRun);if(blueprint){blueprint.whiteStage=4;blueprint.message='白模蓝图已确认并完成主体替换，本次蓝图可以继续复用。';}}vwSave();if(chat()===c)renderAssistant();},1100);
 }
 function vwDrawMaterials(){
  const rows=vwMaterialRows(),count=VRS.materials.size;
