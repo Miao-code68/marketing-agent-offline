@@ -57,22 +57,44 @@ function vwDrawAnalysis(c){
  const run=entry.run;
  const badge=ipDrawer.querySelector('.ip-detail-summary .tag');if(badge)badge.textContent=run.localAnalysis?'灵感内容解析 Skill · 演示':'用户提供 · 视频技能拆解';
  const heading=ipDrawer.querySelector('.ip-breakdown-heading h3');if(heading)heading.innerHTML=`分段拆解 <small>${run.result?.segments?.length||0} 个时间段</small>`;
- host.innerHTML=`<section class="vw-analysis"><div class="vw-analysis-heading"><b>${E(run.skillName||'视频技能拆解')}</b><span>${run.localAnalysis?'正在识别内容结构与可借鉴机制':'基于参考视频的实际画面'}</span></div>${run.result?vwAnalysisHTML(run.result):''}${vwBusy(run)?`<p role="status" class="vw-progress"><i></i>${E(run.message)}</p>`:!run.result?`<p role="alert">${E(run.message)}</p>`:''}${run.connectionError?`<p role="alert">${E(run.connectionError)}</p>${vwButton('vw-analysis-resume','重新连接',c.id)}`:''}${['failed','interrupted'].includes(run.status)?vwButton('vw-analyze','重新拆解',c.id):''}</section>`;
+ host.innerHTML=`<section class="vw-analysis"><div class="vw-analysis-heading"><b>${E(run.skillName||'视频技能拆解')}</b><span>${run.localAnalysis?(run.status==='completed'?'已完成内容结构与可借鉴机制解析':'正在识别内容结构与可借鉴机制'):'基于参考视频的实际画面'}</span></div>${run.result?vwAnalysisHTML(run.result):''}${vwBusy(run)?`<p role="status" class="vw-progress"><i></i>${E(run.message)}</p>`:!run.result?`<p role="alert">${E(run.message)}</p>`:''}${run.connectionError?`<p role="alert">${E(run.connectionError)}</p>${vwButton('vw-analysis-resume','重新连接',c.id)}`:''}${['failed','interrupted'].includes(run.status)?vwButton('vw-analyze','重新拆解',c.id):''}</section>`;
 }
 function vwLocalAnalysisSegments(c){
- if(c.segments?.length)return c.segments.map(segment=>({...segment}));
- const duration=Math.max(12,Number(c.duration)||30),hook=Math.min(4,duration*.18),middle=Math.max(hook+3,duration*.68),end=Math.max(middle+2,duration-3);
- return [
+ const duration=Math.max(12,Number(c.duration)||30),hook=Math.min(4,duration*.18),middle=Math.max(hook+3,duration*.68),end=Math.max(middle+2,duration-3),base=c.segments?.length?c.segments.map(segment=>({...segment})):[
   {start:0,end:hook,original:'开场快速抛出冲突或结果，建立观看理由。',mechanism:'用结果前置或强反差在前几秒抓住注意力。'},
   {start:hook,end:middle,original:'展开核心场景，连续展示问题与关键细节。',mechanism:'用清晰场景和递进信息维持理解与兴趣。'},
   {start:middle,end:end,original:'呈现解决方式、产品价值或前后变化。',mechanism:'让卖点进入真实使用过程，减少生硬口播。'},
   {start:end,end:duration,original:'总结结果并给出下一步行动。',mechanism:'用明确 CTA 收束内容并推动转化。'}
  ];
+ const details=[
+  ['开场钩子','问题前置 · 结果悬念','迅速建立与目标用户有关的真实问题','近景或结果画面先出现，主标题同步落版'],
+  ['场景铺陈','场景代入 · 信息递进','把核心使用情境和操作门槛说清楚','中近景与操作特写交替，关键词字幕跟随动作'],
+  ['价值证明','过程演示 · 前后对照','通过可见步骤证明产品或内容价值','关键动作放慢并停留，使用对照画面强化差异'],
+  ['转化收束','结果回扣 · 行动引导','总结收益并降低下一步行动成本','结果画面稳定停留，CTA 字幕清晰收尾']
+ ];
+ return base.map((segment,index)=>{const d=details[Math.min(index,details.length-1)];return {...segment,title:d[0],attraction:d[1],selling_point:d[2],visual_language:d[3],prompt:`${IM.time(segment.start)}–${IM.time(segment.end)}：${segment.original}；镜头表达采用${d[3]}；重点突出“${d[2]}”，保持自然真实，不添加未经验证的效果。`};});
+}
+function vwLocalAnalysisResult(c){
+ const category=c.category||'视频素材',platform=c.platform||'信息流平台',segments=vwLocalAnalysisSegments(c);
+ return {
+  summary:`这条${category}采用“开场问题或结果前置—场景与步骤展开—价值证明—行动引导”的完整结构。前段快速建立观看理由，中段通过连续画面把抽象卖点转化为可见过程，结尾回扣结果并承接转化。适合在${platform}用于短视频信息流测试，也便于替换产品、主体和 CTA 后继续复用。`,
+  conversion_path:['注意力钩子','问题与场景','过程演示','价值证明','行动引导'],
+  content_tags:[
+   {group:'剧情演绎',label:'内容组织',values:['问题前置','过程推进','结果收束'],evidence:'开场建立问题，中段按步骤推进，结尾回扣结果并给出下一步动作。'},
+   {group:'剧情演绎',label:'叙事节奏',values:['快速进入','递进解释','明确收尾'],evidence:'各时间段职责清晰，信息从吸引注意逐步转向价值证明。'},
+   {group:'视听效果',label:'镜头表达',values:['近景特写','操作切镜','字幕强化'],evidence:'用局部细节和动作变化承载信息，重要节点由字幕辅助理解。'},
+   {group:'视听效果',label:'节奏设计',values:['前段紧凑','重点停留','结尾稳态'],evidence:'开场快速建立冲突，中段为核心步骤留出识别时间，结尾稳定展示结果。'},
+   {group:'营销属性',label:'转化路径',values:['痛点共鸣','场景化卖点','CTA 引导'],evidence:'先让用户识别自身问题，再展示解决过程，最后提供明确行动入口。'},
+   {group:'营销属性',label:'卖点方式',values:['过程可视化','结果可感知'],evidence:'卖点放进真实场景和具体动作中呈现，降低纯口播带来的理解成本。'},
+   {group:'适用人群',label:'核心受众',values:['效率敏感人群','关注实用价值用户'],evidence:'内容强调具体问题、操作步骤和可感知结果，对目标明确的用户更友好。'},
+   {group:'适用人群',label:'适配场景',values:[platform,'短视频信息流','素材复刻与二创'],evidence:`结构短、信息密度清晰，适合${platform}的快速浏览与多版本测试。`}
+  ],segments,uncertainties:['当前为在线演示解析；接入真实视频解析服务后，可进一步核对人物、产品、对白、镜头运动和音频细节。']
+ };
 }
 function vwStartLocalAnalysis(c,key){
  const ref=vwReference(c),run=vwNewRun('analyze','灵感内容解析 Skill 正在读取素材，识别开场钩子、内容结构与转化动作…');
  Object.assign(run,{status:'running',skillName:'灵感内容解析 Skill',localAnalysis:true});workspace.videoAnalyses[key]={reference:ref,run};vwSave();vwDrawAnalysis(c);
- setTimeout(()=>{if(workspace.videoAnalyses[key]?.run!==run)return;run.status='completed';run.message='解析完成';run.result={summary:`已完成「${c.title}」的结构化灵感解析，可按时间段查看原片内容与可借鉴机制。`,segments:vwLocalAnalysisSegments(c),uncertainties:[]};vwSave();if(ipDrawer.open&&IS.active===c.id)vwDrawAnalysis(c);},850);
+ setTimeout(()=>{if(workspace.videoAnalyses[key]?.run!==run)return;run.status='completed';run.message='灵感内容解析已完成';run.result=vwLocalAnalysisResult(c);vwSave();document.dispatchEvent(new CustomEvent('inspiration-job-change',{detail:{reference:ref,run}}));if(ipDrawer.open&&IS.active===c.id)vwDrawAnalysis(c);},850);
 }
 async function vwAnalyze(id,force=false){
  const c=inspirationFind(id);if(!c||c.mediaType==='image')return;
