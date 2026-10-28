@@ -6,7 +6,7 @@
 
 ### macOS
 
-1. 下载 `release/营销Agent离线版.zip` 并解压。
+1. [下载营销Agent离线版.zip](release/营销Agent离线版.zip) 并解压。
 2. 双击 `启动营销Agent.command`。
 3. 浏览器会自动打开离线网页。
 
