@@ -173,9 +173,10 @@ function vwWhiteRunHTML(run,c){
 }
 function vwPublishChoice(run){
  const decision=run.publishDecision;
- if(decision==='later')return `<div class="vw-publish-choice decided"><span>已暂存到成片库，之后仍可从“智能投放”继续发布。</span><button data-r-action="vw-publish-video" data-id="${E(run.localId)}">现在发布</button></div>`;
+ if(decision==='saved')return `<div class="vw-publish-choice decided saved"><span>✓ 已保存到资产库，可在“资产 → AI 成片库”继续查看和使用。</span></div>`;
+ if(decision==='later')return `<div class="vw-publish-choice decided"><span>已选择暂不发布，本次成片仍保留在当前对话中。</span><button data-r-action="vw-save-video" data-id="${E(run.localId)}">保存到资产库</button><button data-r-action="vw-publish-video" data-id="${E(run.localId)}">发布计划</button></div>`;
  if(decision==='publish')return `<div class="vw-publish-choice decided"><span>已带入智能投放，继续选择账户、广告组和计划。</span></div>`;
- return `<div class="vw-publish-choice"><div><small>NEXT STEP</small><b>视频已经生成，是否继续发布？</b><span>发布后会把这条成片作为已选素材带入投放流程。</span></div><button data-r-action="vw-publish-later" data-id="${E(run.localId)}">暂不发布</button><button class="solid" data-r-action="vw-publish-video" data-id="${E(run.localId)}">发布到计划</button></div>`;
+ return `<div class="vw-publish-choice"><div><small>NEXT STEP</small><b>视频已经生成，接下来如何处理？</b><span>可以保存到 AI 成片库，也可以暂不发布或直接创建发布计划。</span></div><button class="save" data-r-action="vw-save-video" data-id="${E(run.localId)}">保存到资产库</button><button data-r-action="vw-publish-later" data-id="${E(run.localId)}">暂不发布</button><button class="solid" data-r-action="vw-publish-video" data-id="${E(run.localId)}">发布计划</button></div>`;
 }
 function vwRunHTML(run,c){
  if(run.whiteModel)return vwWhiteRunHTML(run,c);
@@ -184,7 +185,7 @@ function vwRunHTML(run,c){
 }
 function vwChoiceHTML(flow,message){
  const script=flow.selectedScript,mix=message.choice==='mix',direct=message.choice==='direct';
- return `<div class="vw-response vw-choice"><div class="vw-agent-label">${icon('spark')} 视频创作 Agent</div><section><small>制作方式确认</small><h3>已选用「${E(script?.title||'推荐脚本')}」，接下来怎么制作？</h3><p>你可以从内容资产或本地上传至少 3 段视频进行混剪，也可以直接按脚本生成视频。</p><div><button data-r-action="vw-choice-mix" ${message.choice?'disabled':''}>选择素材混剪</button><button class="solid" data-r-action="vw-choice-direct" ${message.choice?'disabled':''}>直接生成视频</button></div>${message.choice?`<b>✓ 已确认：${mix?'选择素材混剪':direct?'直接生成视频':''}</b>`:''}</section></div>`;
+ return `<div class="vw-response vw-choice"><div class="vw-agent-label">${icon('spark')} 视频创作 Agent</div><section><small>制作方式确认</small><h3>已选用「${E(script?.title||'推荐脚本')}」，接下来怎么制作？</h3><p>可以从内容资产选择至少 3 段视频进行混剪，也可以快速生成一条演示成片并继续保存或发布。</p><div><button data-r-action="vw-choice-mix" ${message.choice?'disabled':''}>选择素材混剪</button><button class="solid" data-r-action="vw-choice-direct" ${message.choice?'disabled':''}>快速生成演示视频</button></div>${message.choice?`<b>✓ 已确认：${mix?'选择素材混剪':direct?'快速生成演示视频':''}</b>`:''}</section></div>`;
 }
 async function vwRenderVideo(el,reference){
  try{
@@ -303,11 +304,22 @@ function vwDrawWhiteLibrary(){
 }
 function vwStudioScripts(source,round=1){
  const segments=VRS.segment!==null&&source.segments?.[VRS.segment]?[source.segments[VRS.segment]]:(source.segments||[]),mechanism=segments.map(s=>s.mechanism).filter(Boolean).join('、')||'快速建立情境、展示核心卖点并用行动引导收束',subject=source.summary||source.title;
- return [
-  {title:'痛点反转型',duration:28,structure:['用户痛点','意外转折','产品解法','行动引导'],body:`【0–3 秒】直接抛出目标用户最熟悉的困扰，用一句反问留住注意力。\n【3–10 秒】还原真实使用场景，并放大问题带来的不便。\n【10–22 秒】自然带出产品，用近景展示关键卖点和使用过程。\n【22–28 秒】给出结果对比，以清晰行动引导结束。`,reason:`保留“${mechanism}”的节奏，但换成原创场景和表达。`,prompt:`竖屏 9:16，真实生活感，围绕“${subject}”拍摄；前 3 秒强钩子，中段用近景展示产品，结尾给出明确行动引导。第 ${round} 轮脚本。`},
-  {title:'体验记录型',duration:32,structure:['场景代入','第一次体验','细节证明','真实结论'],body:`【0–4 秒】从正在发生的生活场景切入，说明为什么开始这次体验。\n【4–14 秒】用第一视角记录使用步骤，不急于下结论。\n【14–26 秒】展示两个可以被看见的细节变化，并补充真实感受。\n【26–32 秒】总结适合的人群和使用建议，邀请观众继续了解。`,reason:'以体验过程增强可信度，适合使用实拍素材和自然口播。',prompt:`竖屏纪实风，第一视角体验“${subject}”，自然光、真实环境音、细节特写，避免夸张承诺。第 ${round} 轮脚本。`},
-  {title:'清单种草型',duration:25,structure:['结果前置','三点清单','场景证明','收藏引导'],body:`【0–3 秒】先展示最终效果，告诉观众接下来只讲三个重点。\n【3–17 秒】按“一、二、三”快速说明核心卖点，每一点配一段对应画面。\n【17–22 秒】回到完整使用场景，证明三个卖点如何共同解决问题。\n【22–25 秒】用收藏或进一步了解的动作收尾。`,reason:'信息密度高，适合多素材快剪和清晰字幕。',prompt:`竖屏快节奏清单视频，主题“${subject}”，三个卖点分别配独立素材，字幕简洁，镜头切换干净。第 ${round} 轮脚本。`}
- ].map((script,index)=>({...script,id:`${round}-${index}`,revision:1}));
+ const pool=[
+  {title:'痛点反转型',duration:28,structure:['用户痛点','意外转折','产品解法','行动引导'],body:`【0–3 秒】直接抛出目标用户最熟悉的困扰，用一句反问留住注意力。\n【3–10 秒】还原真实使用场景，并放大问题带来的不便。\n【10–22 秒】自然带出产品，用近景展示关键卖点和使用过程。\n【22–28 秒】给出结果对比，以清晰行动引导结束。`,reason:`保留“${mechanism}”的节奏，但换成原创场景和表达。`,prompt:`竖屏 9:16，真实生活感，围绕“${subject}”拍摄；前 3 秒强钩子，中段近景展示产品，结尾行动引导。`},
+  {title:'体验记录型',duration:32,structure:['场景代入','第一次体验','细节证明','真实结论'],body:`【0–4 秒】从正在发生的生活场景切入，说明为什么开始这次体验。\n【4–14 秒】用第一视角记录使用步骤，不急于下结论。\n【14–26 秒】展示两个可以被看见的细节变化，并补充真实感受。\n【26–32 秒】总结适合的人群和使用建议，邀请观众继续了解。`,reason:'以体验过程增强可信度，适合使用实拍素材和自然口播。',prompt:`竖屏纪实风，第一视角体验“${subject}”，自然光、真实环境音、细节特写。`},
+  {title:'清单种草型',duration:25,structure:['结果前置','三点清单','场景证明','收藏引导'],body:`【0–3 秒】先展示最终效果，告诉观众接下来只讲三个重点。\n【3–17 秒】按“一、二、三”快速说明核心卖点，每一点配一段对应画面。\n【17–22 秒】回到完整使用场景，证明三个卖点如何共同解决问题。\n【22–25 秒】用收藏或进一步了解的动作收尾。`,reason:'信息密度高，适合多素材快剪和清晰字幕。',prompt:`竖屏快节奏清单视频，主题“${subject}”，三个卖点分别配独立素材。`},
+  {title:'误区纠正型',duration:27,structure:['常见误区','事实拆解','正确示范','评论互动'],body:`【0–4 秒】说出用户在“${subject}”上最容易相信的一条误区。\n【4–12 秒】用画面证据解释误区为什么会影响结果。\n【12–23 秒】展示正确做法，并给出可以立刻照做的步骤。\n【23–27 秒】邀请观众留言自己遇到过的类似问题。`,reason:'用“先否定、再证明”的结构制造认知反差，让新一轮脚本与上一轮明显不同。',prompt:`竖屏知识解释风，围绕“${subject}”做误区纠正；开头大字标题，中段对比演示，结尾评论互动。`},
+  {title:'双场景对比型',duration:30,structure:['两种选择','同步对照','结果揭晓','结论推荐'],body:`【0–3 秒】左右分屏展示两种不同选择，并提出“结果会差多少”。\n【3–18 秒】同步记录两个场景的操作过程，关键步骤保持同屏对照。\n【18–26 秒】揭晓结果差异，用特写突出决定性细节。\n【26–30 秒】给出适用人群和明确选择建议。`,reason:'通过平行对照让差异直接可见，适合展示产品效果和使用门槛。',prompt:`9:16 竖屏双栏对比，主题“${subject}”，统一机位与光线，关键差异使用字幕标注。`},
+  {title:'限时挑战型',duration:24,structure:['挑战目标','倒计时过程','意外结果','参与邀请'],body:`【0–3 秒】宣布一个与“${subject}”有关的限时挑战，并亮出倒计时。\n【3–16 秒】用三个快速镜头记录挑战过程，每一步都显示进度。\n【16–21 秒】展示最终结果和过程中最意外的发现。\n【21–24 秒】邀请观众尝试同款挑战并分享结果。`,reason:'挑战任务自带进度感和观看动力，适合快速演示型成片。',prompt:`竖屏挑战视频，节奏明快，画面含倒计时和进度条，主题“${subject}”。`},
+  {title:'问答揭秘型',duration:26,structure:['高频问题','答案悬念','过程揭秘','一句总结'],body:`【0–3 秒】把评论区最高频的问题直接放大到画面中央。\n【3–9 秒】先给半个答案，保留最关键的信息制造悬念。\n【9–22 秒】用连续特写完整展示“${subject}”的真实过程。\n【22–26 秒】用一句易记的结论回答开头问题。`,reason:'用真实问题驱动观看，适合强调可信度和过程细节。',prompt:`竖屏问答风，开场评论气泡，中段过程特写，主题“${subject}”，结尾一句话总结。`},
+  {title:'前后变化型',duration:29,structure:['结果前置','回到之前','关键动作','同框验证'],body:`【0–3 秒】先放最终画面，让观众看见最明显的变化。\n【3–10 秒】回到开始前的状态，说明原本的问题。\n【10–24 秒】完整展示造成变化的三个关键动作。\n【24–29 秒】以前后同框和真实感受完成验证。`,reason:'结果前置可以快速建立期待，再用过程证明变化不是偶然。',prompt:`竖屏前后对比，主题“${subject}”，同机位拍摄，变化节点加入时间标签。`},
+  {title:'避坑指南型',duration:31,structure:['失败画面','三个坑点','正确替代','收藏提醒'],body:`【0–4 秒】展示一次典型失败，并提醒“这三个坑别再踩”。\n【4–22 秒】逐条说明三个坑点，每条同时给出正确替代动作。\n【22–27 秒】展示按正确方法完成后的结果。\n【27–31 秒】用清单截图和收藏提示结束。`,reason:'失败示例和解决办法成对出现，信息实用且有明确收藏价值。',prompt:`竖屏避坑清单，主题“${subject}”，错误用红色标记，正确做法用蓝色标记。`},
+  {title:'幕后揭秘型',duration:33,structure:['成片结果','幕后转场','制作细节','反差收尾'],body:`【0–3 秒】展示精致的最终成片，随后用转场切到真实幕后。\n【3–20 秒】依次展示准备、拍摄和调整“${subject}”的关键细节。\n【20–28 秒】对比镜头外和镜头内的效果差异。\n【28–33 秒】用一个轻松反差瞬间结束并引导关注。`,reason:'幕后内容可以降低距离感，同时自然解释产品或内容如何完成。',prompt:`竖屏幕后花絮风，主题“${subject}”，手持纪实镜头与正式成片交替剪辑。`},
+  {title:'用户证言型',duration:28,structure:['真实评价','使用片段','细节佐证','人群建议'],body:`【0–4 秒】用一句克制的真实评价开场，不直接给出夸张结论。\n【4–18 秒】穿插三个使用“${subject}”的生活片段，保留自然环境音。\n【18–24 秒】补充一个可验证的细节作为佐证。\n【24–28 秒】说明更适合哪类用户。`,reason:'弱化硬广表达，用生活片段和可验证细节建立信任。',prompt:`竖屏用户证言，主题“${subject}”，自然口播、生活实拍、克制字幕。`},
+  {title:'一天跟拍型',duration:35,structure:['早晨出发','中途使用','高频时刻','晚间复盘'],body:`【0–5 秒】从早晨准备开始，交代今天为什么会用到“${subject}”。\n【5–20 秒】跟拍两个真实使用场景，展示操作而不是讲解。\n【20–29 秒】记录一天中使用频率最高的时刻。\n【29–35 秒】晚间复盘体验，并给出是否继续使用的结论。`,reason:'时间线让多个卖点自然出现，适合需要展示多场景价值的内容。',prompt:`竖屏日记跟拍，主题“${subject}”，晨间到夜晚自然光变化，时间戳串联。`}
+ ];
+ const offset=((round-1)*3)%pool.length;
+ return Array.from({length:3},(_,index)=>pool[(offset+index)%pool.length]).map((script,index)=>({...script,prompt:`${script.prompt} 第 ${round} 轮重新生成。`,id:`${round}-${index}`,revision:1,generationRound:round}));
 }
 function vwStudioCard(script,index){const selected=VRS.selected===index;return `<article class="vw-studio-script ${selected?'selected':''}"><header><div><small>推荐脚本 ${index+1}</small><h3>${E(script.title)}</h3></div><span>${script.body.length} 字 · 预计 ${script.duration} 秒</span></header><div class="vw-structure">${script.structure.map(E).map(x=>`<span>${x}</span>`).join('<i>＋</i>')}</div><p>${E(script.body)}</p><footer><small>✧ 推荐理由：${E(script.reason)}</small><div><button data-r-action="vw-studio-edit" data-id="${index}">编辑</button><button class="solid" data-r-action="vw-studio-select" data-id="${index}">${selected?'已选用':'选用'}</button></div></footer></article>`;}
 function vwDrawStudio(){
@@ -336,7 +348,7 @@ function vwLaunchStudio(materials=[]){
  c.title=(mix?'混剪同款 · ':'制作同款 · ')+source.title;c.videoWorkflow={reference,runs:[],mode:'generate',selectedScript:JSON.parse(JSON.stringify(script)),...(mix?{fission:{materials}}:{})};c.reference={id:source.id,title:source.title,text:mix?`参考视频 · ${materials.length} 段素材混剪`:'参考视频 · 制作同款'};
  const text=`选用「${script.title}」开始${mix?`使用 ${materials.length} 段素材混剪`:'生成视频'}。\n\n【脚本】\n${script.body}\n\n【生成提示词】\n${script.prompt}`;c.messages.push({role:'user',text,time:now(),videoReference:reference});
  const run=vwNewRun('generate',mix?'正在整理脚本与混剪素材…':'正在按选中脚本创建视频…');c.videoWorkflow.runs.push(run);vwRunMessage(c,run);WB.agentSection='chat';assistantTab='chat';AW.folder=null;location.hash='ad-agent';vwSave();render();renderAssistant();
- if(source.mediaId&&!source.demo)vwStart(reference,run,{action:'generate',message:text,script,materials});else if(!mix)vwCreateDemoVideo(c,run);else{run.status='submitted';run.message=`已提交混剪任务：使用 ${materials.length} 段素材，完成后将归档到 AI 成片库。`;run.result={summary:'脚本和制作方式已确认，视频任务正在排队。',segments:[],scripts:[],questions:[],project_url:'',video_url:'',task_ids:[]};vwSave();renderAssistant();}
+ if(!mix)vwCreateDemoVideo(c,run);else{run.status='submitted';run.message=`已提交混剪任务：使用 ${materials.length} 段素材，完成后将归档到 AI 成片库。`;run.result={summary:'脚本和制作方式已确认，视频任务正在排队。',segments:[],scripts:[],questions:[],project_url:'',video_url:'',task_ids:[]};vwSave();renderAssistant();}
 }
 function vwAppendScriptRemake(c,source,segment){
  const index=segment===undefined?c.videoWorkflow.segment:Number(segment),scripts=(()=>{VRS.segment=index;return vwStudioScripts(source,1);})(),selectedSegments=index!==null&&source.segments?.[index]?[source.segments[index]]:(source.segments||[]),run=vwNewRun('remake','脚本拆解 Skill 已完成参考内容分析，并生成 3 个不同版本的原创脚本。请先选择一版，也可以编辑或重新生成。');
@@ -381,7 +393,20 @@ function vwLaunchChatChoice(materials=[]){
  const text=mix?`使用 ${materials.length} 段素材混剪`:'直接生成视频';c.messages.push({role:'user',text,time:now()});flow.mode='generate';if(mix)flow.fission={materials};
  const run=vwNewRun('generate',mix?'正在整理选中脚本与混剪素材…':'正在按选中脚本生成视频…');flow.runs.push(run);vwRunMessage(c,run);state.messages=c.messages;vwSave();vwMaterialDrawer.close();renderAssistant();
  const request=`选用「${script.title}」V${script.revision||1} 开始${text}。\n\n【脚本】\n${script.body}\n\n【生成提示词】\n${script.prompt||script.body}`;
- if(source.mediaId&&!source.demo)vwStart(flow.reference,run,{action:'generate',message:request,script,materials});else if(!mix)vwCreateDemoVideo(c,run);else{run.status='submitted';run.message=`已提交混剪任务：使用 ${materials.length} 段素材，完成后将归档到 AI 成片库。`;run.result={summary:'脚本与制作方式已经确认，视频任务正在排队。',segments:[],scripts:[],questions:[],project_url:'',video_url:'',task_ids:[]};vwSave();renderAssistant();}
+ if(!mix)vwCreateDemoVideo(c,run);else{run.status='submitted';run.message=`已提交混剪任务：使用 ${materials.length} 段素材，完成后将归档到 AI 成片库。`;run.result={summary:'脚本与制作方式已经确认，视频任务正在排队。',segments:[],scripts:[],questions:[],project_url:'',video_url:'',task_ids:[]};vwSave();renderAssistant();}
+}
+
+async function vwSaveGeneratedVideo(c,run){
+ if(!run?.result?.video_url)return;
+ if(run.assetId){run.publishDecision='saved';vwSave();toast('已保存到资产库');location.hash='assets';return;}
+ try{
+  const response=await fetch(run.result.video_url);if(!response.ok)throw Error('成片读取失败');
+  const blob=await response.blob(),mediaId=`ai-video-file-${run.localId}`,assetId=`ai-video-${run.localId}`,script=c.videoWorkflow?.selectedScript;
+  await inspirationMedia(mediaId,new File([blob],`AI成片-${run.localId}.mp4`,{type:blob.type||'video/mp4'}));
+  workspace.generatedMedia??=[];
+  workspace.generatedMedia.unshift({id:assetId,origin:'ai-generated',status:'completed',mediaType:'video',mediaId,title:`${script?.title||'视频二创'} · AI 成片`,summary:'由视频二创流程生成并保存的演示成片。',platform:'AI 生成',category:'AI 成片',duration:script?.duration||28,ratio:'竖屏 9:16',created:Date.now(),ownerId:c.ownerId||state.id,demo:true,art:'app'});
+  run.assetId=assetId;run.publishDecision='saved';vwSave();renderAssistant();toast('已保存到资产库');setTimeout(()=>{location.hash='assets';},350);
+ }catch(error){toast(error.message||'保存到资产库失败，请重试');}
 }
 R.invoke('ip-remake',b=>{const source=inspirationFind(b.dataset.id);if(!source)return;if(source.mediaType==='image')return vwImageRemake(b);if(ipDrawer.open)ipDrawer.close();if(ipLarge.open)ipLarge.close();vwStartChatEntry(source,b.dataset.segment);});
 R.invoke('vw-remake-script',()=>{const c=chat(),flow=c.videoWorkflow,source=inspirationFind(flow?.reference?.id);if(!flow?.entryChoice||!source)return;const message=[...c.messages].reverse().find(item=>item.videoRemakeEntry);if(message)message.choice='script';flow.entryChoice=false;vwAppendScriptRemake(c,source,flow.segment);});
@@ -404,6 +429,7 @@ R.invoke('vw-choice-mix',()=>vwPrepareChatMaterials());
 R.invoke('vw-choice-direct',()=>vwLaunchChatChoice());
 R.invoke('vw-material-close',()=>vwMaterialDrawer.close());
 R.invoke('vw-material-confirm',()=>{if(VRS.materials.size<3)return toast('混剪至少需要 3 段视频素材');const rows=vwMaterialRows(),materials=[...VRS.materials].map(id=>{const row=rows.find(item=>item.id===id);return {id,title:row?.title||id,platform:row?.platform||'本地上传'};});chat().videoWorkflow?.localScriptFlow?vwLaunchChatChoice(materials):vwLaunchStudio(materials);});
+R.invoke('vw-save-video',b=>{const c=chat(),run=c.videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);vwSaveGeneratedVideo(c,run);});
 R.invoke('vw-publish-later',b=>{const c=chat(),run=c.videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);if(!run?.result?.video_url)return;run.publishDecision='later';vwSave();renderAssistant();});
 R.invoke('vw-publish-video',b=>{const c=chat(),run=c.videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);if(!run?.result?.video_url)return;run.publishDecision='publish';vwSave();if(typeof window.apfOpenGeneratedPublish==='function')window.apfOpenGeneratedPublish({id:`generated-${run.localId}`,title:'刚刚生成的视频',kind:'视频',tone:'blue',url:run.result.video_url});else toast('智能投放流程正在加载，请稍后再试');});
 vwRemakeStudio.addEventListener('click',event=>{if(event.target===vwRemakeStudio)vwRemakeStudio.close();});vwMaterialDrawer.addEventListener('click',event=>{if(event.target===vwMaterialDrawer)vwMaterialDrawer.close();});vwWhiteLibrary.addEventListener('click',event=>{if(event.target===vwWhiteLibrary)vwWhiteLibrary.close();});
