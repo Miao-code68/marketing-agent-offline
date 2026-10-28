@@ -51,19 +51,35 @@ async function vwPoll(reference,run){
 }
 function vwAnalysisHTML(result){return `<p class="vw-summary">${E(result.summary||'')}</p>${result.segments?.length?`<div class="vw-timeline">${result.segments.map(s=>`<div><time>${IM.time(s.start)}–${IM.time(s.end)}</time><section><b>${E(s.original)}</b><p>${E(s.mechanism)}</p></section></div>`).join('')}</div>`:''}${result.uncertainties?.length?`<p class="vw-uncertainties">待核实：${result.uncertainties.map(E).join('；')}</p>`:''}`;}
 function vwDrawAnalysis(c){
- if(c.mediaType==='image'||c.demo)return;
+ if(c.mediaType==='image')return;
  const ref=vwReference(c),entry=workspace.videoAnalyses[vwAnalysisKey(ref)];if(!entry)return;
  const host=$('#ip-segments');if(!host)return;
  const run=entry.run;
- const badge=ipDrawer.querySelector('.ip-detail-summary .tag');if(badge)badge.textContent='用户提供 · 视频技能拆解';
+ const badge=ipDrawer.querySelector('.ip-detail-summary .tag');if(badge)badge.textContent=run.localAnalysis?'灵感内容解析 Skill · 演示':'用户提供 · 视频技能拆解';
  const heading=ipDrawer.querySelector('.ip-breakdown-heading h3');if(heading)heading.innerHTML=`分段拆解 <small>${run.result?.segments?.length||0} 个时间段</small>`;
- host.innerHTML=`<section class="vw-analysis"><div class="vw-analysis-heading"><b>视频技能拆解</b><span>基于参考视频的实际画面</span></div>${run.result?vwAnalysisHTML(run.result):''}${vwBusy(run)?`<p role="status" class="vw-progress"><i></i>${E(run.message)}</p>`:!run.result?`<p role="alert">${E(run.message)}</p>`:''}${run.connectionError?`<p role="alert">${E(run.connectionError)}</p>${vwButton('vw-analysis-resume','重新连接',c.id)}`:''}${['failed','interrupted'].includes(run.status)?vwButton('vw-analyze','重新拆解',c.id):''}</section>`;
+ host.innerHTML=`<section class="vw-analysis"><div class="vw-analysis-heading"><b>${E(run.skillName||'视频技能拆解')}</b><span>${run.localAnalysis?'正在识别内容结构与可借鉴机制':'基于参考视频的实际画面'}</span></div>${run.result?vwAnalysisHTML(run.result):''}${vwBusy(run)?`<p role="status" class="vw-progress"><i></i>${E(run.message)}</p>`:!run.result?`<p role="alert">${E(run.message)}</p>`:''}${run.connectionError?`<p role="alert">${E(run.connectionError)}</p>${vwButton('vw-analysis-resume','重新连接',c.id)}`:''}${['failed','interrupted'].includes(run.status)?vwButton('vw-analyze','重新拆解',c.id):''}</section>`;
+}
+function vwLocalAnalysisSegments(c){
+ if(c.segments?.length)return c.segments.map(segment=>({...segment}));
+ const duration=Math.max(12,Number(c.duration)||30),hook=Math.min(4,duration*.18),middle=Math.max(hook+3,duration*.68),end=Math.max(middle+2,duration-3);
+ return [
+  {start:0,end:hook,original:'开场快速抛出冲突或结果，建立观看理由。',mechanism:'用结果前置或强反差在前几秒抓住注意力。'},
+  {start:hook,end:middle,original:'展开核心场景，连续展示问题与关键细节。',mechanism:'用清晰场景和递进信息维持理解与兴趣。'},
+  {start:middle,end:end,original:'呈现解决方式、产品价值或前后变化。',mechanism:'让卖点进入真实使用过程，减少生硬口播。'},
+  {start:end,end:duration,original:'总结结果并给出下一步行动。',mechanism:'用明确 CTA 收束内容并推动转化。'}
+ ];
+}
+function vwStartLocalAnalysis(c,key){
+ const ref=vwReference(c),run=vwNewRun('analyze','灵感内容解析 Skill 正在读取素材，识别开场钩子、内容结构与转化动作…');
+ Object.assign(run,{status:'running',skillName:'灵感内容解析 Skill',localAnalysis:true});workspace.videoAnalyses[key]={reference:ref,run};vwSave();vwDrawAnalysis(c);
+ setTimeout(()=>{if(workspace.videoAnalyses[key]?.run!==run)return;run.status='completed';run.message='解析完成';run.result={summary:`已完成「${c.title}」的结构化灵感解析，可按时间段查看原片内容与可借鉴机制。`,segments:vwLocalAnalysisSegments(c),uncertainties:[]};vwSave();if(ipDrawer.open&&IS.active===c.id)vwDrawAnalysis(c);},850);
 }
 async function vwAnalyze(id,force=false){
- const c=inspirationFind(id);if(!c||c.mediaType==='image'||c.demo)return;
+ const c=inspirationFind(id);if(!c||c.mediaType==='image')return;
  const ref=vwReference(c),key=vwAnalysisKey(ref);let entry=workspace.videoAnalyses[key];
  if(entry&&!force){vwDrawAnalysis(c);vwPoll(entry.reference,entry.run);return;}
  if(entry&&vwBusy(entry.run))return;
+ if(c.demo||window.__STATIC_DEMO__)return vwStartLocalAnalysis(c,key);
  const run=vwNewRun('analyze');entry={reference:ref,run};workspace.videoAnalyses[key]=entry;vwSave();vwDrawAnalysis(c);
  await vwStart(ref,run,{action:'analyze',message:'请拆解这个参考视频，说明实际画面、内容结构和可借鉴机制。'});
 }
@@ -334,7 +350,7 @@ function vwMaterialRows(){const assets=typeof caRows==='function'?caRows().filte
 function vwMaterialPreview(row){if(row.poster)return `<img src="${E(row.poster)}" alt="${E(row.title)}">`;if(typeof caThumb==='function'&&!row.file)return caThumb(row);return '<span class="vw-material-placeholder">▶</span>';}
 function vwCreateDemoVideo(c,run){
  run.status='running';run.message=run.demoRunningMessage||'正在根据选中的脚本生成演示视频…';vwSave();if(chat()===c)renderAssistant();
- setTimeout(()=>{if(!vwBusy(run))return;run.status='completed';run.message=run.demoCompleteMessage||'视频已经生成，可以直接预览或下载。';run.result={summary:'',segments:[],scripts:[],questions:[],project_url:'',video_url:'demo-generated-video.mp4',task_ids:[]};if(run.whiteReplacement){const blueprint=c.videoWorkflow?.runs.find(item=>item.localId===c.videoWorkflow.whiteBlueprintRun);if(blueprint){blueprint.whiteStage=4;blueprint.message='白模蓝图已确认并完成主体替换，本次蓝图可以继续复用。';}}vwSave();if(chat()===c)renderAssistant();},1100);
+ setTimeout(()=>{if(!vwBusy(run))return;run.status='completed';run.message=run.demoCompleteMessage||'视频已经生成，可以直接预览或下载。';run.result={summary:'',segments:[],scripts:[],questions:[],project_url:'',video_url:'/demo-generated-video.mp4',task_ids:[]};if(run.whiteReplacement){const blueprint=c.videoWorkflow?.runs.find(item=>item.localId===c.videoWorkflow.whiteBlueprintRun);if(blueprint){blueprint.whiteStage=4;blueprint.message='白模蓝图已确认并完成主体替换，本次蓝图可以继续复用。';}}vwSave();if(chat()===c)renderAssistant();},1100);
 }
 function vwDrawMaterials(){
  const rows=vwMaterialRows(),count=VRS.materials.size;
