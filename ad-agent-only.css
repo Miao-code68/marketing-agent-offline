@@ -1,0 +1,32 @@
+html.ad-agent-only,
+html.ad-agent-only body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #f4f7fc;
+}
+
+html.ad-agent-only .app {
+  width: 100%;
+  height: 100dvh;
+  min-height: 620px;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+html.ad-agent-only #wb-agent-back,
+html.ad-agent-only #assistant-drawer[data-presentation="page"] .af-logo,
+html.ad-agent-only #assistant-drawer[data-presentation="page"] .wb-agent-resources {
+  display: none !important;
+}
+
+html.ad-agent-only #assistant-drawer[data-presentation="page"] .af-rail {
+  padding-top: 18px;
+}
+
+@media (max-width: 600px) {
+  html.ad-agent-only .app {
+    min-height: 100dvh;
+  }
+}
