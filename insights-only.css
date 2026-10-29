@@ -1,0 +1,71 @@
+html.insights-only,
+html.insights-only body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #f2f6fd;
+}
+
+html.insights-only .app,
+html.insights-only #app.inspiration-page {
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  grid-template-columns: minmax(0, 1fr) !important;
+  box-shadow: none;
+}
+
+html.insights-only .app > .sidebar,
+html.insights-only .app > #details,
+html.insights-only #open-nav,
+html.insights-only #assistant-open,
+html.insights-only #open-panel {
+  display: none !important;
+}
+
+html.insights-only .main {
+  width: 100%;
+  min-width: 0;
+}
+
+html.insights-only .main > header {
+  min-height: 62px;
+  padding: 20px 32px 16px;
+  background: #ffffffa8;
+}
+
+html.insights-only .breadcrumb {
+  font-size: 12px;
+}
+
+html.insights-only .breadcrumb span:first-child {
+  max-width: none;
+}
+
+html.insights-only .inspiration-page #view {
+  padding: 28px 34px 42px;
+}
+
+html.insights-only .ip-page {
+  max-width: 1550px;
+}
+
+@media (max-width: 600px) {
+  html.insights-only .app,
+  html.insights-only #app.inspiration-page {
+    margin: 0;
+    height: 100dvh;
+    border-radius: 0;
+  }
+
+  html.insights-only .main > header {
+    padding: 15px 17px;
+  }
+
+  html.insights-only .inspiration-page #view {
+    padding: 22px 16px 30px;
+  }
+}
