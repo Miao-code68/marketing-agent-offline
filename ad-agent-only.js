@@ -36,6 +36,7 @@
         <button type="button" class="ad-agent-menu-item" data-r-action="wb-automation">${icon('lightning')}<span>自动化</span></button>
         <button type="button" class="ad-agent-menu-item" data-r-action="af-config">${icon('book')}<span>知识库管理</span></button>
         <button type="button" class="ad-agent-menu-item" data-r-action="af-skills">${icon('wrench')}<span>技能管理</span></button>
+        <button type="button" class="ad-agent-menu-item" data-r-action="wb-apps"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="2.25"/><circle cx="16" cy="8" r="2.25"/><circle cx="8" cy="16" r="2.25"/><rect x="13.75" y="13.75" width="4.5" height="4.5" rx="1"/></svg><span>应用</span></button>
       `);
     }
 
@@ -43,7 +44,8 @@
     const sectionByAction = {
       'wb-automation': 'automation',
       'af-config': 'knowledge',
-      'af-skills': 'skills'
+      'af-skills': 'skills',
+      'wb-apps': 'apps'
     };
     if (newChat) newChat.classList.toggle('active', selectedSection === 'chat');
     sidebarTop.querySelectorAll('.ad-agent-menu-item').forEach(button => {

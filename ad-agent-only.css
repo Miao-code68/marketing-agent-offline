@@ -192,9 +192,184 @@ html.ad-agent-only #aw-sidebar-top svg path {
   stroke-linejoin: round;
 }
 
+html.ad-agent-only #aw-sidebar-top svg circle,
+html.ad-agent-only #aw-sidebar-top svg rect {
+  fill: currentColor;
+  stroke: none;
+}
+
 html.ad-agent-only #aw-sidebar-top button > span {
   min-width: 0;
   line-height: 20px;
+}
+
+html.ad-agent-only .wb-apps-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 30px 34px 22px;
+  border-bottom: 1px solid #e8edf5;
+  background: #fff;
+}
+
+html.ad-agent-only .wb-apps-head h1 {
+  margin: 0;
+  color: #283343;
+  font-size: 22px;
+  font-weight: 650;
+}
+
+html.ad-agent-only .wb-apps-head p {
+  margin: 7px 0 0;
+  color: #8a95a5;
+  font-size: 11px;
+}
+
+html.ad-agent-only .wb-app-search {
+  display: flex;
+  align-items: center;
+  width: min(280px, 42vw);
+  height: 38px;
+  box-sizing: border-box;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid #dbe2ec;
+  border-radius: 9px;
+  background: #f9fafc;
+  color: #8b96a5;
+}
+
+html.ad-agent-only .wb-app-search svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+html.ad-agent-only .wb-app-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #3b4655;
+  font: inherit;
+  font-size: 12px;
+}
+
+html.ad-agent-only .wb-app-search input::placeholder {
+  color: #a4acb8;
+}
+
+html.ad-agent-only .wb-apps-body {
+  min-height: calc(100dvh - 105px);
+  padding: 30px 34px;
+  background: #f7f9fc;
+}
+
+html.ad-agent-only .wb-app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+html.ad-agent-only .wb-app-card {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 112px;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #e1e7f0;
+  border-radius: 14px;
+  background: #fff;
+  color: #334054;
+  text-align: left;
+  box-shadow: 0 5px 18px #35547b0a;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+  max-width: 430px;
+}
+
+html.ad-agent-only .wb-app-card:hover {
+  transform: translateY(-2px);
+  border-color: #a9c7fb;
+  box-shadow: 0 10px 26px #356cc71a;
+}
+
+html.ad-agent-only .wb-app-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #427ff4, #77a9ff);
+  color: #fff;
+  box-shadow: 0 7px 16px #3777e52b;
+}
+
+html.ad-agent-only .wb-app-icon svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+
+html.ad-agent-only .wb-app-copy {
+  display: block;
+  min-width: 0;
+}
+
+html.ad-agent-only .wb-app-copy b,
+html.ad-agent-only .wb-app-copy small,
+html.ad-agent-only .wb-app-copy em {
+  display: block;
+}
+
+html.ad-agent-only .wb-app-copy b {
+  margin-bottom: 7px;
+  font-size: 14px;
+}
+
+html.ad-agent-only .wb-app-copy small {
+  color: #778397;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+html.ad-agent-only .wb-app-copy em {
+  margin-top: 8px;
+  color: #9aa4b2;
+  font-size: 9px;
+  font-style: normal;
+}
+
+html.ad-agent-only .wb-app-arrow {
+  align-self: end;
+  color: #4d7fd6;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  html.ad-agent-only .wb-apps-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  html.ad-agent-only .wb-app-search {
+    width: 100%;
+  }
+
+  html.ad-agent-only .wb-app-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html.ad-agent-only .wb-app-card {
+    max-width: none;
+  }
 }
 
 html.ad-agent-only #aw-projects {

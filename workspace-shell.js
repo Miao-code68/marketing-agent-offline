@@ -99,8 +99,9 @@ const wbRender=render;render=function(){
 paths.pause='M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M9 8v8 M15 8v8';
 paths.lightning='M13 2 4 14h7l-1 8 10-13h-7z';
 paths.wrench='M14 6a5 5 0 0 0-6 6L3 17a3 3 0 0 0 4 4l5-5a5 5 0 0 0 6-6l-3 3-4-4z';
-Object.assign(WB,{agentSection:'chat',taskQuery:'',taskStatus:'all',knowledgeTab:'team',knowledgeQuery:'',knowledgeDisabled:false,knowledgeLayout:'list',knowledgeSort:'recent',skillTab:'shared',skillQuery:''});
-afRail.innerHTML=`<a href="#assistant" class="af-logo" aria-label="返回首页" title="返回首页">➤</a>${afRailButton('af-new','新建对话','plus')}${afRailButton('wb-toggle-agent-rail','历史对话','collapse')}${afRailButton('wb-automation','自动化','lightning')}${afRailButton('af-config','知识库管理','book')}${afRailButton('af-skills','技能管理','wrench')}${afRailButton('af-search','搜索','search')}<div class="af-rail-bottom" aria-hidden="true"></div>`;
+paths.apps='M5 4h5v5H5z M14 4h5v5h-5z M5 14h5v5H5z M14 14h5v5h-5z';
+Object.assign(WB,{agentSection:'chat',taskQuery:'',taskStatus:'all',knowledgeTab:'team',knowledgeQuery:'',knowledgeDisabled:false,knowledgeLayout:'list',knowledgeSort:'recent',skillTab:'shared',skillQuery:'',appQuery:''});
+afRail.innerHTML=`<a href="#assistant" class="af-logo" aria-label="返回首页" title="返回首页">➤</a>${afRailButton('af-new','新建对话','plus')}${afRailButton('wb-toggle-agent-rail','历史对话','collapse')}${afRailButton('wb-automation','自动化','lightning')}${afRailButton('af-config','知识库管理','book')}${afRailButton('af-skills','技能管理','wrench')}${afRailButton('wb-apps','应用','apps')}${afRailButton('af-search','搜索','search')}<div class="af-rail-bottom" aria-hidden="true"></div>`;
 afRail.querySelectorAll(':scope > button').forEach(button=>{button.dataset.tooltip=button.getAttribute('aria-label');button.removeAttribute('title');});
 wbAgentActions.remove();
 const wbAgentPage=document.createElement('section');wbAgentPage.id='wb-agent-page';assistantShell.append(wbAgentPage);
@@ -113,6 +114,7 @@ function wbAgentOpen(section){WB.agentSection=section;AW.folder=null;assistantTa
 R.invoke('wb-automation',()=>wbAgentOpen('automation'));
 R.invoke('af-config',()=>wbAgentOpen('knowledge'));
 R.invoke('af-skills',()=>wbAgentOpen('skills'));
+R.invoke('wb-apps',()=>wbAgentOpen('apps'));
 R.invoke('af-new',()=>{WB.agentSection='chat';awNewChat(state.id);});
 const wbSelectChat=R.actions['aw-select-chat'];R.invoke('aw-select-chat',b=>{WB.agentSection='chat';wbSelectChat(b);});
 const wbNewChat=awNewChat;awNewChat=function(id){WB.agentSection='chat';wbNewChat(id);};
@@ -148,14 +150,19 @@ function wbSkillsPage(){
  const rows=(WB.skillTab==='mine'?R.data.skills:R.catalog?.skills||[]).filter(s=>(s.name+' '+(s.description||'')+' '+(s.author||'')).toLowerCase().includes(WB.skillQuery.toLowerCase()));
  return wbPageHead('技能管理')+`<div class="wb-skills-body"><p class="wb-page-note">个人技能可在聊天中选择；共享区当前展示内置技能，复制到我的技能后可编辑。</p><div class="wb-agent-toolbar"><div class="wb-inner-tabs">${[['mine','我的技能'],['shared','共享技能']].map(([id,label])=>awButton('wb-skill-tab',label,id,WB.skillTab===id?'active':'')).join('')}</div><input class="wb-push-right" id="wb-skill-query" aria-label="搜索技能名称、描述或发布者" placeholder="搜索名称、描述或发布者" value="${E(WB.skillQuery)}">${WB.skillTab==='mine'?'<button data-r-action="new-skill">＋ 新建技能</button><button data-r-action="import-skill">导入技能</button><input hidden id="skill-file-input" type="file" accept=".zip,.md">':''}</div><div class="wb-skill-cards">${rows.map(s=>`<article><div><h3>${E(s.name)}</h3><button data-r-action="wb-skill-view" data-id="${E(s.id)}">查看</button></div><p>${E(s.description||'个人技能')}</p><small>${E(s.author||s.category||(WB.skillTab==='mine'?'个人技能':'内置技能'))}${s.updated?' · '+E(s.updated):''}</small></article>`).join('')||wbAgentEmpty('暂无匹配的技能')}</div></div>`;
 }
+function wbAppsPage(){
+ const applications=[{id:'inspiration',name:'灵感库',description:'发现优质内容与热门趋势，进入内容洞察和热梗洞察。',meta:'内容洞察 · 热梗洞察'}];
+ const query=WB.appQuery.trim().toLowerCase(),rows=applications.filter(app=>(app.name+' '+app.description+' '+app.meta).toLowerCase().includes(query));
+ return `<header class="wb-apps-head"><div><h1>应用</h1><p>选择应用进入对应工作空间</p></div><label class="wb-app-search" aria-label="搜索应用">${icon('search')}<input id="wb-app-query" placeholder="搜索应用" value="${E(WB.appQuery)}"></label></header><div class="wb-apps-body"><div class="wb-app-grid">${rows.map(app=>`<button type="button" class="wb-app-card" data-r-action="wb-open-app" data-id="${E(app.id)}"><span class="wb-app-icon">${icon('spark')}</span><span class="wb-app-copy"><b>${E(app.name)}</b><small>${E(app.description)}</small><em>${E(app.meta)}</em></span><span class="wb-app-arrow">进入 →</span></button>`).join('')||wbAgentEmpty('没有找到匹配的应用')}</div></div>`;
+}
 function wbRenderAgentPage(){
  const section=WB.agentSection,active=section!=='chat'&&assistantShell.dataset.presentation==='page';
  assistantShell.classList.toggle('wb-inner-page',active);
- afRail.querySelectorAll('button').forEach(b=>{const selected=({'af-new':'chat','wb-automation':'automation','af-config':'knowledge','af-skills':'skills'})[b.dataset.rAction]===section;b.classList.toggle('active',selected);if(selected)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+ afRail.querySelectorAll('button').forEach(b=>{const selected=({'af-new':'chat','wb-automation':'automation','af-config':'knowledge','af-skills':'skills','wb-apps':'apps'})[b.dataset.rAction]===section;b.classList.toggle('active',selected);if(selected)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
  if(!active)return;
- wbAgentPage.innerHTML=section==='automation'?wbAutomationPage():section==='knowledge'?wbKnowledgePage():wbSkillsPage();
+ wbAgentPage.innerHTML=section==='automation'?wbAutomationPage():section==='knowledge'?wbKnowledgePage():section==='skills'?wbSkillsPage():wbAppsPage();
  const bindQuery=(id,key)=>{const el=$(id);if(el)el.oninput=e=>{WB[key]=e.target.value;const pos=e.target.selectionStart;wbRenderAgentPage();$(id).focus();$(id).setSelectionRange(pos,pos);};};
- bindQuery('#wb-task-query','taskQuery');bindQuery('#wb-knowledge-query','knowledgeQuery');bindQuery('#wb-skill-query','skillQuery');
+ bindQuery('#wb-task-query','taskQuery');bindQuery('#wb-knowledge-query','knowledgeQuery');bindQuery('#wb-skill-query','skillQuery');bindQuery('#wb-app-query','appQuery');
  if($('#wb-task-status'))$('#wb-task-status').onchange=e=>{WB.taskStatus=e.target.value;wbRenderAgentPage();};
  if($('#wb-knowledge-disabled'))$('#wb-knowledge-disabled').onchange=e=>{WB.knowledgeDisabled=e.target.checked;wbRenderAgentPage();};
  if($('#wb-knowledge-sort'))$('#wb-knowledge-sort').onchange=e=>{WB.knowledgeSort=e.target.value;wbRenderAgentPage();};
@@ -163,6 +170,7 @@ function wbRenderAgentPage(){
 }
 for(const [action,key] of [['wb-knowledge-tab','knowledgeTab'],['wb-knowledge-layout','knowledgeLayout'],['wb-skill-tab','skillTab']])R.invoke(action,b=>{WB[key]=b.dataset.id;if(key==='skillTab')R.skillTab=WB.skillTab==='mine'?'mine':'source';wbRenderAgentPage();});
 R.invoke('wb-knowledge-query',()=>wbRenderAgentPage());
+R.invoke('wb-open-app',b=>{if(b.dataset.id!=='inspiration')return;const target=new URL('./',location.href);target.search=location.search;target.hash='insights';location.assign(target.href);});
 function wbKnowledgeForm(id){const k=workspace.knowledge.find(k=>k.id===id);modal(k?'编辑知识库项目':'新建知识库项目','保存品牌规范、产品资料或内容方法，供 Agent 对话引用。',[{key:'name',label:'项目名称',required:true,value:k?.name},{key:'content',label:'知识内容',multi:true,required:true,value:k?.content}],v=>{if(k)Object.assign(k,v,{updated:now()});else workspace.knowledge.push({...v,id:uid(),created:now(),updated:now()});});}
 R.invoke('wb-new-knowledge',()=>wbKnowledgeForm());R.invoke('wb-edit-knowledge',b=>wbKnowledgeForm(b.dataset.id));
 R.invoke('wb-disable-knowledge',b=>{const k=workspace.knowledge.find(k=>k.id===b.dataset.id);modal(k.disabled?'启用知识库项目':'停用知识库项目','保留项目内容和已有引用，停用项目在列表中默认隐藏。',[],()=>{k.disabled=!k.disabled;});});
