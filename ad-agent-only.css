@@ -144,11 +144,24 @@ html.ad-agent-only #aw-sidebar-top .ad-agent-menu-item {
 html.ad-agent-only #aw-sidebar-top #assistant-new {
   display: flex !important;
   min-height: 36px;
-  background: #eaf2ff !important;
-  color: #202a37 !important;
+  background: transparent !important;
+  color: #525965 !important;
   opacity: 1 !important;
   visibility: visible !important;
   font-weight: 500;
+}
+
+html.ad-agent-only #aw-sidebar-top > button.active,
+html.ad-agent-only #aw-sidebar-top #assistant-new.active,
+html.ad-agent-only #aw-sidebar-top .ad-agent-menu-item.active {
+  background: #e7f0ff !important;
+  color: #2f6fd6 !important;
+  font-weight: 600;
+}
+
+html.ad-agent-only #aw-sidebar-top > button.active svg,
+html.ad-agent-only #aw-sidebar-top .ad-agent-menu-item.active svg {
+  color: #2f79ec;
 }
 
 html.ad-agent-only #aw-sidebar-top #assistant-new::first-letter {

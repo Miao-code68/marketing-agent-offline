@@ -38,6 +38,17 @@
       `);
     }
 
+    const selectedSection = typeof WB !== 'undefined' ? WB.agentSection : 'chat';
+    const sectionByAction = {
+      'wb-automation': 'automation',
+      'af-config': 'knowledge',
+      'af-skills': 'skills'
+    };
+    if (newChat) newChat.classList.toggle('active', selectedSection === 'chat');
+    sidebarTop.querySelectorAll('.ad-agent-menu-item').forEach(button => {
+      button.classList.toggle('active', sectionByAction[button.dataset.rAction] === selectedSection);
+    });
+
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const day = 86400000;
