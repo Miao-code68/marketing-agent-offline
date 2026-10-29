@@ -30,6 +30,7 @@
 
     const newChat = document.querySelector('#assistant-new');
     if (newChat && !sidebarTop.querySelector('.ad-agent-menu-item')) {
+      newChat.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>新建对话</span>';
       sidebarTop.replaceChildren(newChat);
       sidebarTop.insertAdjacentHTML('beforeend', `
         <button type="button" class="ad-agent-menu-item" data-r-action="wb-automation">${icon('lightning')}<span>自动化</span></button>
