@@ -91,7 +91,7 @@ const wbRender=render;render=function(){
  if(['assets','asset-favorites','content-assets','content-asset-detail'].includes(page))$('#header-page').textContent='资产 / '+(page==='assets'?'AI 成片库':'内容资产');
  if(wbIsTool()){$('#header-page').textContent='Ad agent / '+pages[page][1];$('#view').insertAdjacentHTML('afterbegin',`<div class="wb-tool-context"><a href="#ad-agent">← 返回 Agent 对话</a><span>Ad agent · ${E(pages[page][1])}</span><button data-r-action="af-workflows">切换工作流</button></div>`);}
  if(['brand-assets','deliverables','idea-notes'].includes(page))$('#view').insertAdjacentHTML('afterbegin','<div class="wb-tool-context"><a href="#ad-agent">← 返回 Agent</a><a href="#brand-assets">品牌与资料</a><a href="#deliverables">成片与文稿</a><a href="#idea-notes">灵感笔记</a></div>');
- if(page==='insights'&&$('#view .ip-heading h1')&&!$('#view .ip-trend-page'))$('#view .ip-heading h1').textContent='内容洞察';
+ if(page==='insights'&&$('#view .ip-heading h1')&&!$('#view .ip-trend-page'))$('#view .ip-heading h1').textContent='灵感库';
  wbSyncAgentMenu();
  if(wbTaskDialog.open)wbDrawTasks();
 };
@@ -151,7 +151,7 @@ function wbSkillsPage(){
  return wbPageHead('技能管理')+`<div class="wb-skills-body"><p class="wb-page-note">个人技能可在聊天中选择；共享区当前展示内置技能，复制到我的技能后可编辑。</p><div class="wb-agent-toolbar"><div class="wb-inner-tabs">${[['mine','我的技能'],['shared','共享技能']].map(([id,label])=>awButton('wb-skill-tab',label,id,WB.skillTab===id?'active':'')).join('')}</div><input class="wb-push-right" id="wb-skill-query" aria-label="搜索技能名称、描述或发布者" placeholder="搜索名称、描述或发布者" value="${E(WB.skillQuery)}">${WB.skillTab==='mine'?'<button data-r-action="new-skill">＋ 新建技能</button><button data-r-action="import-skill">导入技能</button><input hidden id="skill-file-input" type="file" accept=".zip,.md">':''}</div><div class="wb-skill-cards">${rows.map(s=>`<article><div><h3>${E(s.name)}</h3><button data-r-action="wb-skill-view" data-id="${E(s.id)}">查看</button></div><p>${E(s.description||'个人技能')}</p><small>${E(s.author||s.category||(WB.skillTab==='mine'?'个人技能':'内置技能'))}${s.updated?' · '+E(s.updated):''}</small></article>`).join('')||wbAgentEmpty('暂无匹配的技能')}</div></div>`;
 }
 function wbAppsPage(){
- const applications=[{id:'inspiration',name:'灵感库',description:'发现优质内容与热门趋势，进入内容洞察和热梗洞察。',meta:'内容洞察 · 热梗洞察'}];
+ const applications=[{id:'inspiration',name:'灵感库',description:'发现优质内容与热门趋势，进入内容洞察和热点洞察。',meta:'内容洞察 · 热点洞察'}];
  const query=WB.appQuery.trim().toLowerCase(),rows=applications.filter(app=>(app.name+' '+app.description+' '+app.meta).toLowerCase().includes(query));
  return `<header class="wb-apps-head"><div><h1>应用</h1><p>选择应用进入对应工作空间</p></div><label class="wb-app-search" aria-label="搜索应用">${icon('search')}<input id="wb-app-query" placeholder="搜索应用" value="${E(WB.appQuery)}"></label></header><div class="wb-apps-body"><div class="wb-app-grid">${rows.map(app=>`<button type="button" class="wb-app-card" data-r-action="wb-open-app" data-id="${E(app.id)}"><span class="wb-app-icon">${icon('spark')}</span><span class="wb-app-copy"><b>${E(app.name)}</b><small>${E(app.description)}</small><em>${E(app.meta)}</em></span><span class="wb-app-arrow">进入 →</span></button>`).join('')||wbAgentEmpty('没有找到匹配的应用')}</div></div>`;
 }
