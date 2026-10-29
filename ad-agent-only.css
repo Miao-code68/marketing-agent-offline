@@ -142,8 +142,12 @@ html.ad-agent-only #aw-sidebar-top .ad-agent-menu-item {
 }
 
 html.ad-agent-only #aw-sidebar-top #assistant-new {
-  background: #eaf2ff;
-  color: #202a37;
+  display: flex !important;
+  min-height: 36px;
+  background: #eaf2ff !important;
+  color: #202a37 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
   font-weight: 500;
 }
 
