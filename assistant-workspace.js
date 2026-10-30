@@ -131,7 +131,7 @@ function awRenderRichPrompt(c){
  host.querySelectorAll('select[data-aw-component]').forEach(select=>select.onchange=()=>{const item=c.tipComponents.find(component=>component.name===select.dataset.awComponent);if(!item)return;item.value=select.value;c.draft=awResolveCustomTip(c);persist();renderAssistant();});
 }
 function awRenderChips(){const c=awChat();c.tipComponents??=[];
- $('#aw-context-chips').innerHTML=c.skillIds.map(id=>`<span class="aw-skill-chip">⚒ 技能：${E(awSkill(id)?.name||id)}${awButton('aw-remove-skill','×',id)}</span>`).join('')+c.presetIds.map(id=>{const p=workspace.assistantPresets.find(x=>x.id===id);return p?`<span>策略 · ${E(p.name)}${awButton('aw-remove-preset','×',id)}</span>`:'';}).join('')+c.attachments.map(f=>`<span title="${E(f.status)}">▧ ${E(f.name)}${awButton('aw-remove-file','×',f.id)}</span>`).join('');
+ $('#aw-context-chips').innerHTML=(c.expert?`<span class="aw-skill-chip">◎ 专家：${E(c.expert.name)}</span>`:'')+c.skillIds.map(id=>`<span class="aw-skill-chip">⚒ 技能：${E(awSkill(id)?.name||id)}${awButton('aw-remove-skill','×',id)}</span>`).join('')+c.presetIds.map(id=>{const p=workspace.assistantPresets.find(x=>x.id===id);return p?`<span>策略 · ${E(p.name)}${awButton('aw-remove-preset','×',id)}</span>`:'';}).join('')+c.attachments.map(f=>`<span title="${E(f.status)}">▧ ${E(f.name)}${awButton('aw-remove-file','×',f.id)}</span>`).join('');
  awRenderRichPrompt(c);
  $('#send').disabled=!c.draft?.trim()||AW.uploading;
 }
