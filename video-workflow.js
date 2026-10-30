@@ -52,14 +52,15 @@ async function vwPoll(reference,run){
 function vwAnalysisHTML(result,reference,mode='task'){return `<section class="it-analysis"><h3>内容概要</h3><p class="vw-summary">${E(result.summary||'暂无内容概要')}</p><h3>分镜脚本 <small>${result.segments?.length||0} 个分镜</small></h3>${vwStoryboardHTML(result,reference,mode)}</section>`;}
 function vwStoryboardHTML(result,reference={},mode='drawer'){
  const segments=result.segments||[];if(!segments.length)return '<div class="ip-empty"><h3>这条视频还没有分镜脚本</h3><p>当前仅展示已有的内容概要。</p></div>';
- return `<div class="vw-shot-list">${segments.map((s,i)=>{const seek=mode==='task'?`data-it="seek" data-time="${Number(s.start)||0}"`:`data-r-action="ip-seek" data-id="${Number(s.start)||0}"`;const visual=reference.poster?`<img src="${E(reference.poster)}" alt="分镜 ${i+1} 缩略图">`:reference.art?`<span class="vw-shot-thumb-art">${inspirationArt(reference)}</span>`:`<span class="vw-shot-placeholder">${String(i+1).padStart(2,'0')}</span>`;return `<article class="vw-shot"><header><i></i><b>分镜${i+1}：${E(s.original)}</b></header><div class="vw-shot-card"><div class="vw-shot-thumb">${visual}<button ${seek} aria-label="播放分镜 ${i+1}">▶</button><time>◷ ${IM.time(s.start)}–${IM.time(s.end)}</time></div><div class="vw-shot-content"><small>分镜提示词</small><p class="vw-shot-prompt">${E(s.prompt||s.original)}</p><dl><div><dt>吸睛点</dt><dd>${E(s.attraction||'待识别')}</dd></div><div><dt>核心卖点</dt><dd>${E(s.selling_point||'待识别')}</dd></div><div><dt>视觉语言</dt><dd>${E(s.visual_language||'待识别')}</dd></div></dl></div></div></article>`;}).join('')}</div>`;
+ return `<div class="vw-shot-list">${segments.map((s,i)=>{const seek=mode==='task'?`data-it="seek" data-time="${Number(s.start)||0}"`:`data-r-action="ip-seek" data-id="${Number(s.start)||0}"`;const visual=reference.poster?`<img src="${E(reference.poster)}" alt="分镜 ${i+1} 缩略图">`:reference.art?`<span class="vw-shot-thumb-art">${inspirationArt(reference)}</span>`:`<span class="vw-shot-placeholder">${String(i+1).padStart(2,'0')}</span>`;return `<article class="vw-shot"><header><i></i><b>分镜${i+1}：${E(s.original)}</b></header><div class="vw-shot-card"><div class="vw-shot-thumb">${visual}<button ${seek} aria-label="播放分镜 ${i+1}">▶</button><time>◷ ${IM.time(s.start)}–${IM.time(s.end)}</time></div><div class="vw-shot-content"><small>分镜提示词</small><p class="vw-shot-prompt">${E(s.prompt||s.original)}</p><dl><div><dt>主角形象</dt><dd>${E(s.character||'待识别')}</dd></div><div><dt>画面风格</dt><dd>${E(s.visual_style||s.visual_language||'待识别')}</dd></div><div><dt>关键画面元素</dt><dd>${E(s.visual_elements||s.attraction||'待识别')}</dd></div></dl></div></div></article>`;}).join('')}</div>`;
 }
 function vwDrawAnalysis(c){
  if(c.mediaType==='image')return;
  const ref=vwReference(c),entry=workspace.videoAnalyses[vwAnalysisKey(ref)];if(!entry)return;
  const host=$('#ip-segments');if(!host)return;
  const run=entry.run;
- const headings=ipDrawer.querySelectorAll('.ip-breakdown-heading h3');if(headings[0])headings[0].textContent='内容概要';if(headings[1])headings[1].innerHTML=`分镜脚本 <small>${run.result?.segments?.length||0} 个时间段</small>`;
+ if(run.localAnalysis&&run.result&&!run.result.segments?.[0]?.character){run.result=vwLocalAnalysisResult(c);vwSave();}
+ const heading=ipDrawer.querySelector('[data-ip-detail-panel="storyboard"] .ip-breakdown-heading h3');if(heading)heading.innerHTML=`脚本拆解 <small>${run.result?.segments?.length||0} 个时间段</small>`;
  const summary=ipDrawer.querySelector('#ip-summary');if(summary&&run.result?.summary)summary.textContent=run.result.summary;
  host.innerHTML=`<section class="vw-analysis">${run.result?vwStoryboardHTML(run.result,c,'drawer'):''}${vwBusy(run)?`<p role="status" class="vw-progress"><i></i>${E(run.message)}</p>`:!run.result?`<p role="alert">${E(run.message)}</p>`:''}${run.connectionError?`<p role="alert">${E(run.connectionError)}</p>${vwButton('vw-analysis-resume','重新连接',c.id)}`:''}${['failed','interrupted'].includes(run.status)?vwButton('vw-analyze','重新拆解',c.id):''}</section>`;
 }
@@ -70,18 +71,26 @@ function vwLocalAnalysisSegments(c){
   {start:middle,end:end,original:'呈现解决方式、产品价值或前后变化。',mechanism:'让卖点进入真实使用过程，减少生硬口播。'},
   {start:end,end:duration,original:'总结结果并给出下一步行动。',mechanism:'用明确 CTA 收束内容并推动转化。'}
  ];
+ const profile={
+  commute:['年轻上班族，浅色通勤装，手持包或手机','自然光生活实拍，低饱和暖灰色调','地铁或街道、通勤包、手机、人物疲惫到放松的表情'],
+  game:['卡通游戏角色或成年玩家，动作和情绪清晰','高饱和游戏录屏，快节奏切镜与界面反馈','角色、关卡障碍、操作按钮、得分与失败反馈'],
+  app:['成年职场用户，手持手机，着装简洁','明亮界面演示，蓝白配色，操作特写清晰','手机屏幕、任务列表、手指点击、整理前后对比'],
+  bottle:['生活方式人物的手部出镜，动作舒缓自然','柔和自然光静物实拍，浅色治愈画面','桌面、产品瓶身、材质反光、植物与使用细节'],
+  dashboard:['成年职场用户，以手部操作和界面为主','简洁屏幕录制，低饱和蓝灰配色','电脑屏幕、看板卡片、鼠标拖动、状态列变化'],
+  earbuds:['年轻通勤者，侧脸和佩戴动作清楚','城市生活实拍，冷暖对比，产品近景干净','耳机、街道或车厢、环境人流、佩戴前后表情']
+ }[c.art]||['成年内容主角，形象真实，表情和动作清楚','自然场景实拍，画面干净，重点信息由近景呈现','人物、核心物件、环境线索和辅助字幕'];
  const details=[
-  ['开场钩子','问题前置 · 结果悬念','迅速建立与目标用户有关的真实问题','近景或结果画面先出现，主标题同步落版'],
-  ['场景铺陈','场景代入 · 信息递进','把核心使用情境和操作门槛说清楚','中近景与操作特写交替，关键词字幕跟随动作'],
-  ['价值证明','过程演示 · 前后对照','通过可见步骤证明产品或内容价值','关键动作放慢并停留，使用对照画面强化差异'],
-  ['转化收束','结果回扣 · 行动引导','总结收益并降低下一步行动成本','结果画面稳定停留，CTA 字幕清晰收尾']
+  ['开场钩子',profile[0],profile[1],`先出现${profile[2]}，用近景或结果画面迅速建立冲突`],
+  ['场景铺陈',profile[0],profile[1],`${profile[2]}，以中近景和操作特写交代人物处境`],
+  ['价值证明',profile[0],profile[1],`${profile[2]}，关键动作放慢并保留前后变化`],
+  ['转化收束',profile[0],profile[1],`${profile[2]}，结果画面稳定停留并以简洁字幕收尾`]
  ];
- return base.map((segment,index)=>{const d=details[Math.min(index,details.length-1)];return {...segment,title:d[0],attraction:d[1],selling_point:d[2],visual_language:d[3],prompt:`${IM.time(segment.start)}–${IM.time(segment.end)}：${segment.original}；镜头表达采用${d[3]}；重点突出“${d[2]}”，保持自然真实，不添加未经验证的效果。`};});
+ return base.map((segment,index)=>{const d=details[Math.min(index,details.length-1)];return {...segment,title:d[0],character:d[1],visual_style:d[2],visual_elements:d[3],attraction:d[3],selling_point:segment.mechanism,visual_language:d[2],prompt:`${IM.time(segment.start)}–${IM.time(segment.end)}：${segment.original}；主角为${d[1]}；采用${d[2]}；画面包含${d[3]}。`};});
 }
 function vwLocalAnalysisResult(c){
  const category=c.category||'视频素材',platform=c.platform||'信息流平台',segments=vwLocalAnalysisSegments(c);
  return {
-  summary:`这条${category}采用“开场问题或结果前置—场景与步骤展开—价值证明—行动引导”的完整结构。前段快速建立观看理由，中段通过连续画面把抽象卖点转化为可见过程，结尾回扣结果并承接转化。适合在${platform}用于短视频信息流测试，也便于替换产品、主体和 CTA 后继续复用。`,
+  summary:typeof ipProfile==='function'?ipProfile(c).body:`这条${category}采用“开场问题或结果前置—场景与步骤展开—价值证明—行动引导”的完整结构。前段快速建立观看理由，中段通过连续画面把抽象卖点转化为可见过程，结尾回扣结果并承接转化。适合在${platform}用于短视频信息流测试。`,
   conversion_path:['注意力钩子','问题与场景','过程演示','价值证明','行动引导'],
   content_tags:[
    {group:'剧情演绎',label:'内容组织',values:['问题前置','过程推进','结果收束'],evidence:'开场建立问题，中段按步骤推进，结尾回扣结果并给出下一步动作。'},
