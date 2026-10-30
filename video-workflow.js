@@ -145,12 +145,59 @@ const vwBriefPresets=[
  {direction:'语音社交',title:'你亲口任命的下班监督员',subtitle:'通过兑现小约定表现陪伴',duration:28},
  {direction:'AI伴侣',title:'伞还了，人还没走',subtitle:'借还伞继续角色对话',duration:25}
 ];
+const vwRegeneratedBriefPresets=[
+ {direction:'废土生存 · 冲突喜剧',title:'别开！那不是补给箱',subtitle:'误触警报后，搭子把翻车变成共同逃跑',duration:29},
+ {direction:'游戏默契 · 反差接梗',title:'撤退路线怎么成了漂移赛',subtitle:'用临时失控测试搭子的行动回应',duration:27},
+ {direction:'轻悬疑 · 陪伴感',title:'最后一格电，留给谁',subtitle:'在资源不足时表现愿意留下的选择',duration:26}
+];
 function vwBriefMeta(script,index,run){
+ if(script.briefMeta)return {...script.briefMeta};
  if((run?.generationRound||1)===1&&vwBriefPresets[index])return {...vwBriefPresets[index]};
+ if((run?.generationRound||1)===2&&vwRegeneratedBriefPresets[index])return {...vwRegeneratedBriefPresets[index]};
  return {direction:`创意方向 ${index+1}`,title:script.title,subtitle:script.reason||'点击查看完整故事提案与分段脚本',duration:script.duration};
 }
 function vwBriefTimeline(rows){return `<div class="vw-brief-timeline"><div class="head"><b>片内时间／阶段（建议）</b><b>画面与动作</b><b>台词与声音（原创建议）</b></div>${rows.map(row=>`<div><b>${E(row[0])}</b><p>${E(row[1])}</p><p>${E(row[2])}</p></div>`).join('')}</div>`;}
+function vwWastelandBriefHTML(script){
+ const meta=vwBriefMeta(script,0,{generationRound:2}),rows=[
+  ['0—3秒','废弃公路坡顶，小林手已掀开锈铁箱；搭子伸手制止未及，箱内红色警报亮起，废车后怪物齐转头。路边预埋两只空铁桶。','搭子急喊：“别开！那不是补给箱——”被警报打断；怪群转头瞬间音乐抽掉半拍。'],
+  ['3—6秒','短回叙字幕“组队前”；手机打开TT语音，剧情聊天示意：小林“我有点菜，能一起玩吗？”搭子“来，一起玩”。末帧标“回到这一局”。','只用消息提示音，文字不重复配音；压低警报底声衔接回当前。'],
+  ['6—11秒','怪群尘浪逼近，小林蹲在铁桶后，手里还捏着刚捡的破零件，看看零件又看看怪群。','小林：“我是来捡垃圾的，不是来送外卖的！”语速紧张但清楚。'],
+  ['11—15秒','搭子看一眼警报箱，再看小林；小林缩起肩，指向对方身后的逃跑路线。','搭子：“你这哪是菜，你是开饭铃。”小林：“要不你先走？”'],
+  ['15—20秒','搭子把第二只空桶踢到小林身边，指向下坡；自己先钻进第一只桶，小林愣半拍后照做。','搭子：“上车！这单拒绝配送。”留半拍展示“车”竟是桶的反差。'],
+  ['20—25秒','两人蹬地启动，空桶沿坡滚动；搭子的桶撞小石头歪一下，继续跟上，怪群留在远景，不交代脱险结果。','小林：“别人带飞，你带滚啊！”金属咣当一声，两人短促笑声。'],
+  ['25—29秒','两只铁桶歪歪扭扭滚离，切TT品牌落版：“翻车有人接梗”。','旁白：“上TT语音，找游戏搭子。”保留一下远处滚桶声作为尾音。']
+ ];
+ return `<article class="vw-brief-document"><header><h1>${E(meta.title)}</h1><small>故事提案 · v2 · draft</small><p>${E(meta.subtitle)}</p></header><h2>本版机会与改编依据</h2><p>废土搜刮误触警报引来怪群，TT新搭子把责怪预期变成接梗和共同逃跑；测试高冲突悬念开场与共同出糗的包容回报。</p><p>这是方向一的创意修订，关联机会 <code>20261030-140343-de6948aa-o001</code>。沿用原片整体正向表现及固定内容卡；本版未重新检索、取证或排名。旧90分仅为原方向入选记录，不代表对新版的评分。</p><p><strong>继承：</strong>保留“玩家担心自己菜—TT搭子包容回应”，改用共同滚桶的行动兑现。原片的熟人推荐及顺序不再照搬。</p><p><strong>外部贡献：</strong>沿用已读正文 <a href="https://www.digitaling.com/projects/379511.html" target="_blank" rel="noopener">Columbia《计划不如现挂》↗</a> 中将意外变成共同体验的启发；废土危机、滚桶、全部对白为新创作，未新增热点依据。</p><h2>故事线</h2><p>黄沙掠过废弃公路，成年拾荒玩家小林正掀开一只像物资箱的锈铁箱。耳机里，新搭子突然喊：“别开！那不是补给箱——”话没说完，箱盖弹开，里面的警报器尖叫，远处废车后的怪物剪影齐刷刷转头。画面切黑半拍，留下问题：这下怎么办？</p><p>用约3秒短回叙交代两人关系：字幕“组队前”，小林打开TT语音找搭子，主动发“我有点菜，能一起玩吗？”，对方回“来，一起玩”。字幕“回到这一局”，怪群扬起尘浪，小林缩在路边空铁桶后：“我是来捡垃圾的，不是来送外卖的！”搭子接话：“你这哪是菜，你是开饭铃。”小林担心拖累：“要不你先走？”搭子却把另一只空桶踢到他旁边：“上车！这单拒绝配送。”</p><p>小林愣住，搭子已经钻进自己的铁桶，示意他跟上。两个人蹬地起步，沿早已可见的下坡路滚出去，桶里传来小林的声音：“别人带飞，你带滚啊！”搭子的桶磕到小石头，咣当一歪，又跟了上来，两人笑出声。镜头停在两只歪歪扭扭滚远的桶上，保留追逐的不确定性。片尾“翻车有人接梗。上TT语音，找游戏搭子”。回报是出错后搭子没走、还一起想招和出糗，未展示保证脱险。</p><p><strong>改编要点：</strong>建议29秒，废土生存游戏质感配反差喜剧；黄沙低饱和背景、锈红警报灯、金属碰撞声。前3秒用制止声、开箱动作和怪群转头形成因果悬念；三个笑点围绕同一件事递进：送外卖的自嘲→开饭铃的接梗→拒绝配送的共同动作。搭子先调侃、后留下行动，笑的是游戏失误，不是人格或技术羞辱。</p><h2>分段脚本</h2>${vwBriefTimeline(rows)}<h2>剧情自检</h2><ul><li>警告没说完就触发警报，怪群出现解释危险；悬念是如何应对，滚桶动作在后半段给出可见回答。</li><li>TT入口用明确回叙补足，人物是经TT找到的新搭子；“有点菜”的前置顾虑与出错后怕被丢下相呼应。</li><li>搭子没有止于一句没关系：把另一只桶交给玩家，自己先钻，最后也出糗；共同承担才构成包容回报。</li><li>外卖、开饭铃和配送取消围绕“误把自己变成怪物目标”递进，最终带滚落实在画面上。</li></ul><p class="vw-brief-reference">参考素材 2054131947692691457：<a href="https://weflycdn.52tt.com/ad/mp4/1778578061999321782.mp4" target="_blank" rel="noopener">查看参考视频 ↗</a></p><h2>内容生成交接</h2><p>后续内容生成 Agent 只接收本版本 Brief JSON。故事、分段脚本、产品事实、继承与改编、参考、制作约束和待确认项均在 Brief 内；无需另附机会点、候选池或原始分析文件。</p><p>当前状态：draft。草稿可用于评审与后续 Prompt 草拟，不能据此视为已获成片生成或投放批准。</p><h2>人群与使用时刻</h2><ul><li>喜欢废土、生存和搜刮游戏，也担心失误被队友责怪的成年玩家；通过游戏语境笑点展示愿意一起玩的搭子关系。</li></ul><h2>继承依据</h2><ul><li>开头吸引：原片没人陪玩的处境，改为组队后出错、担心被抛下的具体冲突；开场事件为原创。</li><li>推进与回报：原片玩家表达自己菜、TT搭子包容回应；新片玩家提出让对方先走，搭子留下并一起钻桶逃跑。</li><li>产品与转化：TT承接找游戏搭子需求；新片明确人物是从TT找到的新搭子，开头后快速补足使用入口，再返回同一局。</li></ul><h2>改编决定</h2><p>按修改要求改成锈铁、黄沙、断桥和废弃公路的原创废土游戏；以“别开！那不是补给箱——”未说完便触发警报制造冲突，怪群出现兑现悬念。把单人误触改成两人钻进铁桶一起滚下坡；“开饭铃／外卖拒绝配送／带滚”均为本稿原创游戏笑点。</p><h2>避免沿用</h2><ul><li>不承诺秒配、必然被喜欢、保证获胜或情感结果。</li><li>不把原片写成已有废土、警报箱、怪群或滚桶剧情；这些全属本版原创。</li><li>不将原创笑点描述成当下热梗；不使用未经核验的游戏IP、怪物设计和配乐。</li></ul><h2>产品已知事实</h2><p>TT语音的业务方向包括游戏组队和语音社交；Soulmate AI伴侣存在为既有业务确认。具体当前界面与额外能力不由此推出。</p><h2>制作约束与待办</h2><pre><code>{
+  "format": "video",
+  "handoff_notes": [
+    "建议竖版9:16；正式尺寸、版位、Logo及产品截图在进入制作时核准。",
+    "人物成年、对白原创；画面与声音采用自有或获准资产。",
+    "黄沙、锈铁、油污、破路牌和废弃高架建立废土风格。",
+    "警报箱、坡道和两只空桶需要提前在画面中建立，避免道具凭空出现。",
+    "怪物用远处剪影和尘浪表达，无血腥；不展示清怪、获胜或保证脱险。",
+    "TT入口标注组队前／回到这一局；聊天气泡为剧情示意。"
+  ]
+}</code></pre><h2>外部参考与覆盖</h2><p><a href="https://www.digitaling.com/projects/379511.html" target="_blank" rel="noopener">Columbia×蒋奇明：计划不如现挂 ↗</a>：迁移从计划失误到共同乐趣的行动逻辑，不复用明星人设；已读项目正文，未观看外部视频。</p></article>`;
+}
+
+function vwRegeneratedBriefDetailHTML(script,index,run){
+ const meta=vwBriefMeta(script,index,run),ideas=[
+  {opportunity:'用“误触警报”把怕拖累队友的顾虑变成即时危机，让搭子的包容通过共同应对而不是口头安慰呈现。',story:'废土搜刮时，玩家错把警报箱当补给箱，怪群被声音吸引。玩家以为新搭子会责怪自己，搭子却先接住他的自嘲，再把一只空铁桶踢过来，提出一起顺坡撤退。两个人的桶都滚得东倒西歪，关系回报落在共同出糗。',rows:[['0—4秒','误开锈铁警报箱，远处怪群同时转头。','“别开！那不是补给箱——”'],['4—9秒','短回叙交代两人通过TT组队。','“我有点菜，能一起玩吗？”'],['9—20秒','玩家担心拖累，搭子观察坡道和空桶。','“要不你先走？”“一起想办法。”'],['20—29秒','两人钻桶滚下坡，保留追逐悬念。','“别人带飞，你带滚啊！”']]},
+  {opportunity:'把一次失控撤退变成两个人临时发明的“漂移赛”，用接梗和动作配合证明默契。',story:'玩家驾驶破旧载具撤退时误触侧滑，刚要道歉，搭子却把漂移当成新路线，主动报弯并配合压车。两人没有获得胜利保证，但把紧张撤退变成共同完成的一次荒诞挑战。',rows:[['0—3秒','载具突然横滑，镜头逼近断桥边缘。','“刹车怎么成方向键了？”'],['3—8秒','TT组队信息快速闪回。','“不会也没事，一起试。”'],['8—20秒','搭子报弯，玩家控制侧滑方向。','“左一点——好，这叫战术漂移。”'],['20—27秒','两人歪着冲过路牌，笑声收尾。','“撤退路线，临时改成漂移赛。”']]},
+  {opportunity:'用“只剩最后一格电”的资源选择制造轻悬疑，在选择中表现搭子愿意留下。',story:'夜间地图里，两人的通讯设备只剩最后一格电。玩家准备把电量让给搭子独自撤离，搭子却用最后的电打开近距离语音，选择陪他走完看不清的路。结尾停在仍未走出的隧道，不承诺脱险。',rows:[['0—4秒','屏幕弹出“电量 1%”，隧道灯熄灭。','“最后一格电，给谁？”'],['4—9秒','回闪两人通过TT找到彼此。','“听得到就别走散。”'],['9—20秒','玩家递出电池，搭子没有接。','“留着照路，我来陪你说话。”'],['20—26秒','两束微光并排前进，远处仍是黑暗。','“还没出去，但至少没走散。”']]}
+ ][index]||{};
+ return `<article class="vw-brief-document"><header><h1>${E(meta.title)}</h1><small>故事提案 · v1 · draft</small><p>${E(meta.subtitle)}</p></header><h2>机会与改编依据</h2><p>${E(ideas.opportunity||script.reason)}</p><p>本方向继承参考片“玩家先表达顾虑—TT搭子用行动回应”的关系机制，人物、危机、对白与视觉场景均重新创作。</p><h2>故事线</h2><p>${E(ideas.story||script.body)}</p><p><strong>改编要点：</strong>建议 ${E(meta.duration)} 秒、9:16；开头先给可见冲突，中段快速补足TT组队来源，后半段用共同动作兑现关系回报。</p><h2>分段脚本</h2>${vwBriefTimeline(ideas.rows||[])}<h2>剧情自检</h2><ul><li>冲突有清晰触发原因，人物选择与结尾动作前后呼应。</li><li>TT入口只承担找搭子的产品路径，不承诺匹配速度、获胜或情感结果。</li><li>笑点针对共同处境，不羞辱玩家的人格或技术水平。</li></ul><h2>内容生成交接</h2><p>当前状态：draft。选择本方向后，可继续用自然语言修改开头、场景、搭子回应、台词风格或结尾；修改结果将生成新版 Brief。</p><h2>制作约束与待办</h2><pre><code>{
+  "format": "video",
+  "duration": ${E(meta.duration)},
+  "ratio": "9:16",
+  "status": "draft",
+  "notes": ["人物与对白原创", "产品界面在制作前核准", "不展示保证获胜或脱险"]
+}</code></pre></article>`;
+}
+
 function vwBriefDetailHTML(script,index,run){
+ if(script.briefVariant==='wasteland')return vwWastelandBriefHTML(script);
+ if((run?.generationRound||1)===2)return vwRegeneratedBriefDetailHTML(script,index,run);
  const meta=vwBriefMeta(script,index,run),first=index===0&&(run?.generationRound||1)===1;
  const timelines=first?[
   ['0—4秒','玩家角色撞上同一障碍，原地转圈；切小林看着空队友位。','小林：“又卡这儿了，难怪没人组我。”碰撞音两次，不用羞辱性音效。'],
@@ -260,8 +307,13 @@ function vwPublishChoice(run){
  if(decision==='publish')return `<div class="vw-publish-choice decided"><span>已带入智能投放，继续选择账户、广告组和计划。</span></div>`;
  return `<div class="vw-publish-choice"><div><small>NEXT STEP</small><b>视频已经生成，接下来如何处理？</b><span>可以保存到 AI 成片库，也可以暂不发布或直接创建发布计划。</span></div><button class="save" data-r-action="vw-save-video" data-id="${E(run.localId)}">保存到资产库</button><button data-r-action="vw-publish-later" data-id="${E(run.localId)}">暂不发布</button><button class="solid" data-r-action="vw-publish-video" data-id="${E(run.localId)}">发布计划</button></div>`;
 }
+function vwBriefRevisionHTML(run){
+ const script=run.result?.scripts?.[0],key=`${run.localId}:0`;if(!script)return '';
+ return `<div class="vw-response vw-brief-revision"><div class="vw-agent-label">${icon('spark')} ${E(run.skillName||'脚本改写 Agent')}</div><p class="vw-status">${E(run.message||'')}</p><p><b>已改成 29 秒废土喜剧版《这单外卖，拒绝配送》。</b></p><p>开头直接制造危机：搭子大喊“别开！那不是补给箱——”，话没说完，玩家已经触发警报，远处怪群齐刷刷转头。</p><p>笑点沿着危机递进：</p><ul><li>玩家：“我是来捡垃圾的，不是来送外卖的！”</li><li>搭子：“你这哪是菜，你是开饭铃。”</li><li>玩家：“要不你先走？”</li><li>搭子踢来一只铁桶：“上车！这单拒绝配送。”</li></ul><p>两人钻桶滚下坡，玩家补刀：“别人带飞，你带滚啊！”</p><p>保留“出错后搭子仍愿意一起玩”的核心，用共同逃跑兑现包容。</p><button type="button" class="vw-revision-brief-link" data-r-action="vw-open-brief" data-id="${E(key)}"><span>▣</span> 查看新版完整 Brief <i>· { } 制作交接 JSON</i></button></div>`;
+}
 function vwRunHTML(run,c){
  if(run.whiteModel)return vwWhiteRunHTML(run,c);
+ if(run.briefRevision)return vwBriefRevisionHTML(run);
  const result=run.result,busy=c.videoWorkflow.runs.some(vwBusy),key=run.localId,local=run.localScripts,round=run.generationRound||(local?c.videoWorkflow.runs.filter(item=>item.localScripts).indexOf(run)+1:1);
  return `<div class="vw-response ${local?'vw-native-scripts':''}"><div class="vw-agent-label">${icon('spark')} ${E(run.skillName||'视频创作 Agent')}</div><p class="vw-status ${vwBusy(run)?'vw-progress':''}" role="status">${vwBusy(run)?'<i></i>':''}${E(run.message||'')}</p>${run.connectionError?`<p class="vw-error">${E(run.connectionError)} ${vwButton('vw-resume','重新连接',key)}</p>`:''}${['failed','interrupted'].includes(run.status)?`<div class="vw-error">${run.action==='analyze'||run.action==='remake'?vwButton('vw-retry','重试',key):'你可以在下方补充说明，继续核对当前制作进度。'}</div>`:''}${run.status==='submitted'?vwButton('vw-check-progress','查看生成进度',key):''}${result?`${result.summary?`<p class="vw-result-summary">${E(result.summary)}</p>`:''}${result.segments?.length?`<details class="vw-breakdown"><summary>✦ 参考视频拆解 · ${result.segments.length} 个时间段</summary>${vwAnalysisHTML(result)}</details>`:''}${local?`<p class="vw-round-label">以下是第 ${round} 轮生成的 3 个版本：</p>`:''}${local&&result.scripts?.length>1?vwBriefTableHTML(result.scripts,run):(result.scripts||[]).map((s,i)=>vwScriptHTML(s,i,run)).join('')}${c.videoWorkflow.localScriptFlow&&result.scripts?.length?`<div class="vw-native-question"><b>${result.scripts.length>1?'你更倾向哪种方向？':'这个修改方向是否合适？'}</b><p>${result.scripts.length>1?'可以直接回复“选用第 1 版”，或“修改第 2 版，让开头更直接”；如果都不合适，也可以说“重新生成 3 个版本”。':'可以回复“选用这个版本”，或继续说明修改要求；如果方向不合适，也可以说“重新生成 3 个版本”。'}</p></div>`:''}${result.questions?.length&&!run.answered?`<form class="vw-questions" data-run="${E(key)}"><b>补充这些信息后继续</b>${result.questions.map((q,i)=>`<label>${E(q.title)}<input name="q${i}" list="vw-options-${E(key)}-${i}" required placeholder="选择建议选项，或输入你的回答" ${busy?'disabled':''}><datalist id="vw-options-${E(key)}-${i}">${q.options.map(o=>`<option value="${E(o)}">`).join('')}</datalist></label>`).join('')}<button type="submit" class="solid" ${busy?'disabled':''}>提交并继续</button></form>`:''}${result.project_url||result.video_url?`<div class="vw-output">${result.video_url?`<div class="vw-generated-video"><video controls playsinline preload="metadata" src="${E(result.video_url)}" aria-label="Agent 生成的视频"></video><div><b>演示视频已生成</b><a href="${E(result.video_url)}" download>下载视频</a></div></div>${vwPublishChoice(run)}`:''}${result.project_url?`<a href="${E(result.project_url)}" target="_blank" rel="noopener">打开制作项目 ↗</a>`:''}</div>`:''}`:''}</div>`;
 }
@@ -371,8 +423,16 @@ function vwSelectScriptNaturally(c,text,index){
 function vwRegenerateScripts(c,text='请重新生成 3 个不同版本的脚本。'){
  const flow=c.videoWorkflow,source=inspirationFind(flow?.reference?.id);if(!flow?.localScriptFlow||!source)return;flow.runs.filter(item=>item.localScripts&&!item.generationRound).forEach(item=>item.generationRound=flow.round||1);flow.round=(flow.round||1)+1;VRS.segment=flow.segment;const scripts=vwStudioScripts(source,flow.round),run=vwNewRun('remake',`已重新生成第 ${flow.round} 轮的 3 个不同版本。上一轮仍保留在对话中。`);Object.assign(run,{status:'completed',skillName:'脚本拆解 Skill',localScripts:true,generationRound:flow.round,result:{summary:'这一次更换了开场角度和叙事路径，你可以直接说明倾向或继续提出修改要求。',segments:[],scripts,questions:[],project_url:'',video_url:'',task_ids:[]}});flow.runs.push(run);flow.selection=null;flow.selectedScript=null;flow.mode='remake';delete flow.editing;delete flow.editingKey;c.messages=c.messages.filter(message=>!message.videoChoice);c.messages.push({role:'user',text,time:now()});vwRunMessage(c,run);c.draft='';state.messages=c.messages;vwSave();renderAssistant();setTimeout(()=>$('#assistant-body .vw-response:last-child')?.scrollIntoView({behavior:'smooth',block:'start'}),0);
 }
+function vwAskBriefRevision(c,text,set,index){
+ const meta=vwBriefMeta(set.scripts[index],index,set.run),flow=c.videoWorkflow;flow.awaitingBriefRevision={runId:set.run.localId,index};c.messages.push({role:'user',text,time:now()},{role:'assistant',text:`可以。我们就基于方向${['一','二','三'][index]||index+1}《${meta.title}》修改。\n\n你想调整哪些地方？比如开头钩子、游戏场景、搭子的回应、台词风格或结尾。也可以直接说哪里不满意，我来改成完整新版 Brief。`,time:now()});c.draft='';state.messages=c.messages;vwSave();renderAssistant();
+}
+function vwCompleteBriefRevision(c,text,pending){
+ const flow=c.videoWorkflow,sourceRun=flow.runs.find(run=>run.localId===pending.runId),source=sourceRun?.result?.scripts?.[pending.index];if(!source)return vwAskScriptDirection(c,text);
+ const revised={...JSON.parse(JSON.stringify(source)),title:'这单外卖，拒绝配送',duration:29,revision:2,briefVariant:'wasteland',briefMeta:{direction:'废土生存 · 冲突喜剧',title:'这单外卖，拒绝配送',subtitle:'误触警报后，搭子把责怪预期变成接梗和共同逃跑',duration:29},body:'【0—3秒】误开警报箱，怪群转头。\n【3—6秒】短回叙交代两人通过TT组队。\n【6—20秒】送外卖、开饭铃、拒绝配送三个笑点递进。\n【20—29秒】两人钻进铁桶滚下坡，以“翻车有人接梗”收尾。',reason:'用废土危机制造悬念，以共同滚桶的行动兑现包容。',prompt:'竖屏 9:16，原创废土生存游戏质感，黄沙低饱和、锈红警报灯与金属碰撞声；成人角色、反差喜剧，不展示保证脱险。'};
+ c.messages.push({role:'user',text,time:now()});c.draft='';delete flow.awaitingBriefRevision;flow.selection=null;flow.selectedScript=null;flow.mode='remake';const run=vwNewRun('refine','已根据你的要求完成方向一的创意修订。');Object.assign(run,{status:'completed',skillName:'脚本改写 Agent',briefRevision:true,result:{summary:'',segments:[],scripts:[revised],questions:[],project_url:'',video_url:'',task_ids:[]}});flow.runs.push(run);vwRunMessage(c,run);state.messages=c.messages;vwSave();renderAssistant();setTimeout(()=>$('#assistant-body .vw-brief-revision:last-child')?.scrollIntoView({behavior:'smooth',block:'start'}),0);
+}
 function vwHandleNativeScriptReply(c,text){
- const flow=c.videoWorkflow,set=vwLatestScriptSet(flow);if(!set)return vwAskScriptDirection(c,text);if(/重新生成|再生成|换一批|换一组|都不合适/.test(text))return vwRegenerateScripts(c,text);const index=vwNaturalScriptIndex(text,set.scripts.length);if(/修改|改一下|改成|优化|调整/.test(text)){if(index===null)return vwAskScriptDirection(c,text);flow.editing=JSON.parse(JSON.stringify(set.scripts[index]));flow.editingParent=set.run.id;flow.editingKey=set.run.localId+':'+index;return vwLocalRefine(c,text);}if(index!==null&&(/选|倾向|喜欢|采用|就用|要第|^[\s123一二三]+$/.test(text)))return vwSelectScriptNaturally(c,text,index);return vwAskScriptDirection(c,text);
+ const flow=c.videoWorkflow;if(flow.awaitingBriefRevision)return vwCompleteBriefRevision(c,text,flow.awaitingBriefRevision);const set=vwLatestScriptSet(flow);if(!set)return vwAskScriptDirection(c,text);if(/重新生成|再生成|换一批|换一组|都不合适/.test(text))return vwRegenerateScripts(c,text);const index=vwNaturalScriptIndex(text,set.scripts.length);if(/修改|改一下|改成|优化|调整/.test(text)){if(index===null)return vwAskScriptDirection(c,text);const specific=text.length>22&&/(开头|钩子|场景|废土|悬念|台词|笑点|回应|结尾|风格|希望|更加)/.test(text)&&!/(可以|能否|能不能).{0,12}(修改|调整).{0,3}[吗？?]?$/.test(text);return specific?vwCompleteBriefRevision(c,text,{runId:set.run.localId,index}):vwAskBriefRevision(c,text,set,index);}if(index!==null&&(/选|倾向|喜欢|采用|就用|要第|^[\s123一二三]+$/.test(text)))return vwSelectScriptNaturally(c,text,index);return vwAskScriptDirection(c,text);
 }
 function vwHandleProductionChoice(c,text){
  const flow=c.videoWorkflow,choiceMessage=[...c.messages].reverse().find(message=>message.videoChoice);if(/混剪|选择素材|素材重新/.test(text)){c.messages.push({role:'user',text,time:now()});c.draft='';if(choiceMessage)choiceMessage.choice='mix';state.messages=c.messages;vwSave();renderAssistant();return vwPrepareChatMaterials();}if(/快速|直接|演示视频|生成视频|开始制作/.test(text)){c.draft='';return vwLaunchChatChoice([],text);}c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'请直接回复“选择素材混剪”或“快速生成演示视频”。',time:now()});c.draft='';state.messages=c.messages;vwSave();renderAssistant();
