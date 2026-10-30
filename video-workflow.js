@@ -455,9 +455,13 @@ async function vwSaveGeneratedVideo(c,run){
   run.assetId=assetId;run.publishDecision='saved';vwSave();renderAssistant();toast('已保存到资产库');setTimeout(()=>{location.hash='assets';},350);
  }catch(error){toast(error.message||'保存到资产库失败，请重试');}
 }
+function vwOpenAgentPage(){
+ if(!document.documentElement.classList.contains('insights-only'))return false;
+ const target=new URL('ad-agent.html',location.href);target.search=location.search;target.searchParams.delete('from');target.hash='ad-agent';location.assign(target.href);return true;
+}
 function vwStartDirectCreation(source,choice){
  if(typeof WB!=='undefined')WB.agentReturnHash=location.hash&&location.hash!=='#ad-agent'?location.hash:'#insights';
- awNewChat(source.ownerId||state.id);const c=chat(),reference=vwReference(source);c.title=(choice==='white'?'复刻同款 · ':'视频二创 · ')+source.title;c.videoWorkflow={reference,runs:[],mode:choice==='white'?'white-model':'remake',segment:null,entryChoice:false,selection:null,selectedScript:null};c.reference={id:source.id,title:source.title,text:choice==='white'?'参考视频 · 复刻同款':'参考视频 · 视频二创'};WB.agentSection='chat';assistantTab='chat';AW.folder=null;location.hash='ad-agent';vwSave();render();choice==='white'?vwStartWhiteModel(c,source):vwAppendScriptRemake(c,source,null);renderAssistant();
+ awNewChat(source.ownerId||state.id);const c=chat(),reference=vwReference(source);c.title=(choice==='white'?'复刻同款 · ':'视频二创 · ')+source.title;c.videoWorkflow={reference,runs:[],mode:choice==='white'?'white-model':'remake',segment:null,entryChoice:false,selection:null,selectedScript:null};c.reference={id:source.id,title:source.title,text:choice==='white'?'参考视频 · 复刻同款':'参考视频 · 视频二创'};WB.agentSection='chat';assistantTab='chat';AW.folder=null;vwSave();choice==='white'?vwStartWhiteModel(c,source):vwAppendScriptRemake(c,source,null);vwSave();if(vwOpenAgentPage())return;location.hash='ad-agent';render();renderAssistant();
 }
 R.invoke('ip-remake',b=>{const source=inspirationFind(b.dataset.id);if(!source)return;if(source.mediaType==='image')return vwImageRemake(b);if(ipDrawer.open)ipDrawer.close();if(ipLarge.open)ipLarge.close();vwStartChatEntry(source,b.dataset.segment);});
 R.invoke('ip-remake-white',b=>{const source=inspirationFind(b.dataset.id);if(!source)return;if(ipDrawer.open)ipDrawer.close();vwStartDirectCreation(source,'white');});
