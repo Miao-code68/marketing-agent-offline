@@ -239,7 +239,9 @@ async function vwRenderVideo(el,reference){
 }
 const vwOriginalRender=renderAssistant;
 renderAssistant=function(){
- vwOriginalRender();const c=chat(),flow=c.videoWorkflow;
+ const c=chat(),flow=c.videoWorkflow;
+ if(flow?.localScriptFlow){const request=c.messages.find(item=>item.role==='user'&&(item.videoScriptRequest||item.text?.startsWith('选择“视频二创”')));if(request){request.text='基于这个参考视频，生产3个不同的原创脚本并制作新视频';request.videoScriptRequest={id:flow.reference?.id,title:flow.reference?.title||'已选参考视频'};}}
+ vwOriginalRender();
  assistantShell.querySelectorAll('#vw-white-reference-bar').forEach(node=>node.remove());
  $('#composer')?.classList.remove('vw-white-reference-active');
  assistantShell.classList.toggle('vw-conversation',!!flow&&assistantTab==='chat'&&!AW.folder&&WB.agentSection==='chat');
@@ -250,6 +252,8 @@ renderAssistant=function(){
  if(flow.mode==='white-prompt'&&flow.whiteConfirmed){const prompt=$('#prompt'),spaced=vwWhiteReferenceSpacing(prompt.value);if(spaced!==prompt.value){prompt.value=c.draft=spaced;flow.whitePromptBase=vwWhiteReferenceSpacing(flow.whitePromptBase||vwWhitePromptBase(spaced));vwSave();}$('#composer').classList.add('vw-white-reference-active');prompt.insertAdjacentHTML('afterend',vwWhiteReferenceBar(flow));prompt.onscroll=()=>vwAlignWhitePrompt(false);prompt.oninput=()=>requestAnimationFrame(()=>vwAlignWhitePrompt(false));vwAlignWhitePrompt(false);requestAnimationFrame(()=>vwAlignWhitePrompt(true));}
  $('#assistant-body').querySelectorAll('.message').forEach((el,i)=>{
   const m=c.messages[i];if(!m)return;
+  if(flow)el.querySelector('[data-chat-brief]')?.remove();
+  if(m.videoScriptRequest){el.classList.add('vw-script-request');el.innerHTML=`<small>你 · ${E(m.time)}</small><p>${E(m.text)}</p><span class="vw-message-reference">▧ <b>参考视频</b>${E(m.videoScriptRequest.title||flow.reference?.title||'已选参考视频')}</span>`;}
   if(m.videoReference){el.classList.add('vw-user-video');el.innerHTML=`<video controls preload="metadata" aria-label="参考视频：${E(m.videoReference.title)}"></video><small>${E(m.videoReference.title)}</small><p>${E(m.text)}</p>`;vwRenderVideo(el.querySelector('video'),m.videoReference);}
   if(m.videoRun){const run=flow.runs.find(r=>r.localId===m.videoRun);if(run){el.classList.add('vw-rich-message');el.innerHTML=vwRunHTML(run,c);if(run.whiteModel&&vwBusy(run))vwScheduleWhiteReport(c,run);else if(vwBusy(run)&&!run.connectionError)vwPoll(flow.reference,run);}}
   if(m.videoChoice){el.classList.add('vw-rich-message');el.innerHTML=vwChoiceHTML(flow,m);}
@@ -401,7 +405,7 @@ function vwAppendScriptRemake(c,source,segment){
  const index=segment===undefined?c.videoWorkflow.segment:Number(segment),scripts=(()=>{VRS.segment=index;return vwStudioScripts(source,1);})(),selectedSegments=index!==null&&source.segments?.[index]?[source.segments[index]]:(source.segments||[]),run=vwNewRun('remake','脚本拆解 Skill 已完成参考内容分析，并生成 3 个不同版本的原创脚本。请先选择一版，也可以编辑或重新生成。');
  Object.assign(run,{status:'completed',skillName:'脚本拆解 Skill',localScripts:true,generationRound:1,result:{summary:`已参考「${source.title}」的内容结构、节奏和表达方式。以下脚本均已替换为原创表达，可继续修改。`,segments:selectedSegments,scripts,questions:[],project_url:'',video_url:'',task_ids:[]}});
  Object.assign(c.videoWorkflow,{runs:[...c.videoWorkflow.runs,run],mode:'remake',localScriptFlow:true,whiteModelFlow:false,round:1,segment:index,selection:null,selectedScript:null});
- c.messages.push({role:'user',text:'选择“视频二创”，请基于原视频生成 3 个不同版本的原创脚本并制作新视频。',time:now()});vwRunMessage(c,run);state.messages=c.messages;vwSave();renderAssistant();setTimeout(()=>$('#assistant-body .vw-response:last-child')?.scrollIntoView({block:'start',behavior:'smooth'}),0);
+ c.messages.push({role:'user',text:'基于这个参考视频，生产3个不同的原创脚本并制作新视频',time:now(),videoScriptRequest:{id:source.id,title:source.title}});vwRunMessage(c,run);state.messages=c.messages;vwSave();renderAssistant();setTimeout(()=>$('#assistant-body .vw-response:last-child')?.scrollIntoView({block:'start',behavior:'smooth'}),0);
 }
 function vwStartChatEntry(source,segment){
  const index=segment===undefined?null:Number(segment),reference=vwReference(source);
