@@ -24,11 +24,11 @@ function itDraw(){
 function itDetail(){
  const e=itEntries().find(e=>itKey(e)===IT.selected);if(!e){IT.selected=null;itDraw();return;}
  const {reference:ref,run}=e;
- itDialog.innerHTML=`<header><button data-it="back">← 任务列表</button><h2>灵感拆解</h2><button data-it="close" aria-label="关闭详情">×</button></header><div class="it-detail"><section class="it-overview"><video controls preload="metadata" poster="${E(ref.poster||'')}" aria-label="参考视频"></video><div><span class="it-status ${run.status==='completed'?'done':''}">${itStatus(run)}</span><h2>${E(ref.title)}</h2><p>${E(ref.platform||'本地视频')} · ${ref.duration?IM.time(ref.duration):'时长待识别'}</p><p role="status">${E(run.message||'')}</p>${run.connectionError?`<p>${E(run.connectionError)}</p><button data-it="resume">重新连接</button>`:''}</div></section>${run.result?vwAnalysisHTML(run.result):'<div class="it-empty">正在处理时可以关闭此面板，完成后会通知你。</div>'}</div>`;
+ itDialog.innerHTML=`<header><button data-it="back">← 任务列表</button><h2>灵感拆解</h2><button data-it="close" aria-label="关闭详情">×</button></header><div class="it-detail"><section class="it-overview"><video controls preload="metadata" poster="${E(ref.poster||'')}" aria-label="参考视频"></video><div><span class="it-status ${run.status==='completed'?'done':''}">${itStatus(run)}</span><h2>${E(ref.title)}</h2><p>${E(ref.platform||'本地视频')} · ${ref.duration?IM.time(ref.duration):'时长待识别'}</p><p role="status">${E(run.message||'')}</p>${run.connectionError?`<p>${E(run.connectionError)}</p><button data-it="resume">重新连接</button>`:''}</div></section>${run.result?vwAnalysisHTML(run.result,ref):'<div class="it-empty">正在处理时可以关闭此面板，完成后会通知你。</div>'}</div>`;
  const video=itDialog.querySelector('video');inspirationMedia(ref.mediaId).then(file=>{if(file&&video.isConnected){const url=URL.createObjectURL(file);IT.urls.push(url);video.src=url;}});
 }
-vwAnalysisHTML=function(result){
- return `<section class="it-analysis"><h3>内容概要</h3><p class="vw-summary">${E(result.summary||'暂无内容概要')}</p><h3>分镜脚本 <small>${result.segments?.length||0} 个分镜</small></h3><div class="it-shots">${(result.segments||[]).map((s,i)=>`<article><div class="it-shot-head"><span class="it-number">${String(i+1).padStart(2,'0')}</span><h4>${E(s.title||'分镜 '+(i+1))}</h4><button data-it="seek" data-time="${Number(s.start)||0}">${IM.time(s.start)}–${IM.time(s.end)} ▷</button></div><div class="it-shot-body"><section><small>分镜内容</small><p>${E(s.original)}</p></section></div></article>`).join('')}</div></section>`;
+vwAnalysisHTML=function(result,reference){
+ return `<section class="it-analysis"><h3>内容概要</h3><p class="vw-summary">${E(result.summary||'暂无内容概要')}</p><h3>分镜脚本 <small>${result.segments?.length||0} 个分镜</small></h3>${vwStoryboardHTML(result,reference,'task')}</section>`;
 };
 function itNotify(ref,run){
  if(run.status!=='completed'||run.notified)return;run.notified=true;vwSave();

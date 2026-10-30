@@ -49,8 +49,11 @@ async function vwPoll(reference,run){
   }
  }finally{VW.polling.delete(run.id);}
 }
-function vwAnalysisHTML(result){return `<section class="it-analysis"><h3>内容概要</h3><p class="vw-summary">${E(result.summary||'暂无内容概要')}</p><h3>分镜脚本 <small>${result.segments?.length||0} 个分镜</small></h3>${vwStoryboardHTML(result)}</section>`;}
-function vwStoryboardHTML(result){return result.segments?.length?`<div class="vw-timeline">${result.segments.map(s=>`<div><time>${IM.time(s.start)}–${IM.time(s.end)}</time><section><b>${E(s.original)}</b></section></div>`).join('')}</div>`:'<div class="ip-empty"><h3>这条视频还没有分镜脚本</h3><p>当前仅展示已有的内容概要。</p></div>';}
+function vwAnalysisHTML(result,reference,mode='task'){return `<section class="it-analysis"><h3>内容概要</h3><p class="vw-summary">${E(result.summary||'暂无内容概要')}</p><h3>分镜脚本 <small>${result.segments?.length||0} 个分镜</small></h3>${vwStoryboardHTML(result,reference,mode)}</section>`;}
+function vwStoryboardHTML(result,reference={},mode='drawer'){
+ const segments=result.segments||[];if(!segments.length)return '<div class="ip-empty"><h3>这条视频还没有分镜脚本</h3><p>当前仅展示已有的内容概要。</p></div>';
+ return `<div class="vw-shot-list">${segments.map((s,i)=>{const seek=mode==='task'?`data-it="seek" data-time="${Number(s.start)||0}"`:`data-r-action="ip-seek" data-id="${Number(s.start)||0}"`;const visual=reference.poster?`<img src="${E(reference.poster)}" alt="分镜 ${i+1} 缩略图">`:reference.art?`<span class="vw-shot-thumb-art">${inspirationArt(reference)}</span>`:`<span class="vw-shot-placeholder">${String(i+1).padStart(2,'0')}</span>`;return `<article class="vw-shot"><header><i></i><b>分镜${i+1}：${E(s.original)}</b></header><div class="vw-shot-card"><div class="vw-shot-thumb">${visual}<button ${seek} aria-label="播放分镜 ${i+1}">▶</button><time>◷ ${IM.time(s.start)}–${IM.time(s.end)}</time></div><div class="vw-shot-content"><small>分镜提示词</small><p class="vw-shot-prompt">${E(s.prompt||s.original)}</p><dl><div><dt>吸睛点</dt><dd>${E(s.attraction||'待识别')}</dd></div><div><dt>核心卖点</dt><dd>${E(s.selling_point||'待识别')}</dd></div><div><dt>视觉语言</dt><dd>${E(s.visual_language||'待识别')}</dd></div></dl></div></div></article>`;}).join('')}</div>`;
+}
 function vwDrawAnalysis(c){
  if(c.mediaType==='image')return;
  const ref=vwReference(c),entry=workspace.videoAnalyses[vwAnalysisKey(ref)];if(!entry)return;
@@ -58,7 +61,7 @@ function vwDrawAnalysis(c){
  const run=entry.run;
  const headings=ipDrawer.querySelectorAll('.ip-breakdown-heading h3');if(headings[0])headings[0].textContent='内容概要';if(headings[1])headings[1].innerHTML=`分镜脚本 <small>${run.result?.segments?.length||0} 个时间段</small>`;
  const summary=ipDrawer.querySelector('#ip-summary');if(summary&&run.result?.summary)summary.textContent=run.result.summary;
- host.innerHTML=`<section class="vw-analysis">${run.result?vwStoryboardHTML(run.result):''}${vwBusy(run)?`<p role="status" class="vw-progress"><i></i>${E(run.message)}</p>`:!run.result?`<p role="alert">${E(run.message)}</p>`:''}${run.connectionError?`<p role="alert">${E(run.connectionError)}</p>${vwButton('vw-analysis-resume','重新连接',c.id)}`:''}${['failed','interrupted'].includes(run.status)?vwButton('vw-analyze','重新拆解',c.id):''}</section>`;
+ host.innerHTML=`<section class="vw-analysis">${run.result?vwStoryboardHTML(run.result,c,'drawer'):''}${vwBusy(run)?`<p role="status" class="vw-progress"><i></i>${E(run.message)}</p>`:!run.result?`<p role="alert">${E(run.message)}</p>`:''}${run.connectionError?`<p role="alert">${E(run.connectionError)}</p>${vwButton('vw-analysis-resume','重新连接',c.id)}`:''}${['failed','interrupted'].includes(run.status)?vwButton('vw-analyze','重新拆解',c.id):''}</section>`;
 }
 function vwLocalAnalysisSegments(c){
  const duration=Math.max(12,Number(c.duration)||30),hook=Math.min(4,duration*.18),middle=Math.max(hook+3,duration*.68),end=Math.max(middle+2,duration-3),base=c.segments?.length?c.segments.map(segment=>({...segment})):[
