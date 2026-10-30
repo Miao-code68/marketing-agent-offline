@@ -75,6 +75,12 @@
     const taskRows = tasks.length
       ? tasks.slice(0, 5).map(task => `<button type="button" class="ad-agent-task-row" data-r-action="wb-automation" title="${E(task.title)}">${E(task.title)}</button>`).join('')
       : '<p class="ad-agent-empty-task">暂无自动化任务</p>';
+    const activeExpertId = typeof awChat === 'function' ? awChat()?.expert?.id : null;
+    const coreExperts = typeof wbCoreExperts !== 'undefined' ? wbCoreExperts : [];
+    const myExperts = workspace.experts || [];
+    const expertRow = (expert, removable = false) => `<div class="ad-agent-expert-wrap ${activeExpertId === expert.id ? 'active' : ''}"><button type="button" class="ad-agent-expert-row" data-r-action="wb-sidebar-expert" data-id="${E(expert.id)}" title="${E(expert.description || expert.name)}"><span>${E(expert.avatar || expert.name.slice(0, 1))}</span><b>${E(expert.name)}</b></button>${removable ? `<button type="button" class="ad-agent-expert-delete" data-r-action="wb-delete-expert" data-id="${E(expert.id)}" aria-label="删除${E(expert.name)}">×</button>` : ''}</div>`;
+    const coreExpertRows = coreExperts.map(expert => expertRow(expert)).join('');
+    const myExpertRows = myExperts.length ? myExperts.map(expert => expertRow(expert, true)).join('') : '<p class="ad-agent-empty-task">还没有自建专家</p>';
     const historyRows = groups.map(([label, matches]) => {
       const rows = history.filter(matches);
       if (!rows.length) return '';
@@ -85,6 +91,14 @@
       <section class="ad-agent-side-section">
         <div class="ad-agent-side-label">自动化任务</div>
         ${taskRows}
+      </section>
+      <section class="ad-agent-side-section ad-agent-expert-section">
+        <div class="ad-agent-side-label">专家</div>
+        ${coreExpertRows}
+      </section>
+      <section class="ad-agent-side-section ad-agent-expert-section">
+        <div class="ad-agent-side-label"><span>我的专家</span><button type="button" data-r-action="wb-new-expert" aria-label="新建专家">＋</button></div>
+        ${myExpertRows}
       </section>
       <section class="ad-agent-side-section">
         <div class="ad-agent-side-label">历史对话</div>
