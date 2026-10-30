@@ -92,6 +92,7 @@ const wbRender=render;render=function(){
  if(wbIsTool()){$('#header-page').textContent='Ad agent / '+pages[page][1];$('#view').insertAdjacentHTML('afterbegin',`<div class="wb-tool-context"><a href="#ad-agent">← 返回 Agent 对话</a><span>Ad agent · ${E(pages[page][1])}</span><button data-r-action="af-workflows">切换工作流</button></div>`);}
  if(['brand-assets','deliverables','idea-notes'].includes(page))$('#view').insertAdjacentHTML('afterbegin','<div class="wb-tool-context"><a href="#ad-agent">← 返回 Agent</a><a href="#brand-assets">品牌与资料</a><a href="#deliverables">成片与文稿</a><a href="#idea-notes">灵感笔记</a></div>');
  if(page==='insights'&&$('#view .ip-heading h1')&&!$('#view .ip-trend-page'))$('#view .ip-heading h1').textContent='灵感库';
+ if(page==='insights'&&document.documentElement.classList.contains('insights-only')&&new URLSearchParams(location.search).get('from')==='ad-agent'){const back=new URL('ad-agent.html',location.href);back.search=location.search;back.searchParams.delete('from');back.hash='ad-agent';$('.breadcrumb').innerHTML=`<a class="wb-app-return" href="${E(back.href)}">← 返回 Ad Agent 应用</a><span>/</span><b>灵感库</b>`;}
  wbSyncAgentMenu();
  if(wbTaskDialog.open)wbDrawTasks();
 };
@@ -170,7 +171,7 @@ function wbRenderAgentPage(){
 }
 for(const [action,key] of [['wb-knowledge-tab','knowledgeTab'],['wb-knowledge-layout','knowledgeLayout'],['wb-skill-tab','skillTab']])R.invoke(action,b=>{WB[key]=b.dataset.id;if(key==='skillTab')R.skillTab=WB.skillTab==='mine'?'mine':'source';wbRenderAgentPage();});
 R.invoke('wb-knowledge-query',()=>wbRenderAgentPage());
-R.invoke('wb-open-app',b=>{if(b.dataset.id!=='inspiration')return;const target=new URL('insights.html',location.href);target.search=location.search;target.hash='insights';location.assign(target.href);});
+R.invoke('wb-open-app',b=>{if(b.dataset.id!=='inspiration')return;const target=new URL('insights.html',location.href);target.search=location.search;target.searchParams.set('from','ad-agent');target.hash='insights';location.assign(target.href);});
 function wbKnowledgeForm(id){const k=workspace.knowledge.find(k=>k.id===id);modal(k?'编辑知识库项目':'新建知识库项目','保存品牌规范、产品资料或内容方法，供 Agent 对话引用。',[{key:'name',label:'项目名称',required:true,value:k?.name},{key:'content',label:'知识内容',multi:true,required:true,value:k?.content}],v=>{if(k)Object.assign(k,v,{updated:now()});else workspace.knowledge.push({...v,id:uid(),created:now(),updated:now()});});}
 R.invoke('wb-new-knowledge',()=>wbKnowledgeForm());R.invoke('wb-edit-knowledge',b=>wbKnowledgeForm(b.dataset.id));
 R.invoke('wb-disable-knowledge',b=>{const k=workspace.knowledge.find(k=>k.id===b.dataset.id);modal(k.disabled?'启用知识库项目':'停用知识库项目','保留项目内容和已有引用，停用项目在列表中默认隐藏。',[],()=>{k.disabled=!k.disabled;});});
