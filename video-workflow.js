@@ -139,6 +139,46 @@ function vwScriptHTML(script,index,run){
  const revision=script.revision||1,structure=(script.structure||[]).join(' → ');
  return `<section class="vw-script"><div class="vw-script-heading"><h3><span>${index+1}.</span> ${E(script.title)}</h3><small>${[...script.body].length} 字 · 预计 ${E(script.duration)} 秒 · V${revision}</small></div>${structure?`<p class="vw-structure-line"><b>结构：</b>${E(structure)}</p>`:''}${script.story?`<p class="vw-story">${E(script.story)}</p>`:''}<div class="vw-script-body">${E(script.body)}</div><details class="vw-prompt"><summary>查看生成提示词</summary><p>${E(script.prompt||script.body)}</p></details><blockquote><b>推荐理由</b><span>${E(script.reason)}</span></blockquote></section>`;
 }
+
+const vwBriefPresets=[
+ {direction:'游戏社交 · 优先推荐',title:'这步，能教我一下吗？',subtitle:'把游戏失误变成搭子一起玩的笑点',duration:28},
+ {direction:'语音社交',title:'你亲口任命的下班监督员',subtitle:'通过兑现小约定表现陪伴',duration:28},
+ {direction:'AI伴侣',title:'伞还了，人还没走',subtitle:'借还伞继续角色对话',duration:25}
+];
+function vwBriefMeta(script,index,run){
+ if((run?.generationRound||1)===1&&vwBriefPresets[index])return {...vwBriefPresets[index]};
+ return {direction:`创意方向 ${index+1}`,title:script.title,subtitle:script.reason||'点击查看完整故事提案与分段脚本',duration:script.duration};
+}
+function vwBriefTimeline(rows){return `<div class="vw-brief-timeline"><div class="head"><b>片内时间／阶段（建议）</b><b>画面与动作</b><b>台词与声音（原创建议）</b></div>${rows.map(row=>`<div><b>${E(row[0])}</b><p>${E(row[1])}</p><p>${E(row[2])}</p></div>`).join('')}</div>`;}
+function vwBriefDetailHTML(script,index,run){
+ const meta=vwBriefMeta(script,index,run),first=index===0&&(run?.generationRound||1)===1;
+ const timelines=first?[
+  ['0—4秒','玩家角色撞上同一障碍，原地转圈；切小林看着空队友位。','小林：“又卡这儿了，难怪没人组我。”碰撞音两次，不用羞辱性音效。'],
+  ['4—8秒','室友探头，小林拿起手机打开TT；后期标识“TT语音·找游戏搭子”。','室友：“去TT找个一起玩的呗。”具体操作画面待核准。'],
+  ['8—12秒','字幕“稍后，和新搭子组队”；两个原创游戏角色出现。','小林：“先说好，我有点菜。”搭子：“一起玩嘛。”'],
+  ['12—18秒','小林角色又被障碍碰得打转，停半拍；搭子没有走开，而是靠近看。','小林：“对不起，我又……”搭子：“等下，这步怎么转的？”'],
+  ['18—24秒','搭子也试着转圈，两人转得歪歪扭扭；真人小林笑起来。','小林：“你不是来带我过关的吗？”搭子：“先带我学这个。”留一拍笑声。'],
+  ['24—28秒','两人继续一起尝试，切TT品牌收尾；字幕“找个一起玩的”。','旁白：“找个一起玩的，上TT语音。”不加胜利音效。']
+ ]:[
+  ['0—4秒',index===1?'下班前，主角在语音房里随口说今晚一定准时走。':'雨停后，主角把借来的伞放到门口，准备结束对话。',index===1?'“今天谁加班谁请奶茶。”':'“伞还你了，这次真的两清。”'],
+  ['4—10秒',index===1?'到点后，新搭子发来一句克制的语音提醒。':'AI 角色接住“还伞”话题，追问伞柄上的小挂件。',index===1?'“你亲口任命的下班监督员来打卡了。”':'“伞回来了，挂件怎么没一起回来？”'],
+  ['10—20秒',index===1?'主角收电脑，对方没有说教，只陪着完成最后一步。':'主角顺势解释，角色以新的问题继续自然对话。',index===1?'“文件存好，电脑合上，我等你说走。”':'“那我明天把挂件带来，你还在吗？”'],
+  [`20—${meta.duration}秒`,index===1?'两人用一个小约定完成陪伴感，画面落到 TT 语音。':'对话停在仍可继续的关系节点，画面落到 AI 伴侣入口。',index===1?'“约定有人记得，下班也有人同行。”':'“伞还了，人还没走。”']
+ ];
+ const opportunity=first?'面对怕拖累而不敢找搭子的需求，继承原片“孤独—朋友推荐TT—新搭子包容”，测试将口头包容变成一起模仿失误动作。':index===1?'把“陪伴”落在一个可以兑现的小约定上，避免只用抽象口号表达关系感。':'用“归还物品”制造对话本应结束的节点，再通过一个自然细节延长角色关系。';
+ const story=first?'成年玩家小林的角色在障碍前连撞两次，最后原地转起圈。他摘下一边耳机，嘟囔“又卡这儿了，难怪没人组我”。旁边室友提醒：“去TT找个一起玩的呗。”小林打开TT语音找游戏搭子。字幕交代“稍后，和新搭子组队”。小林先声明自己不太会玩。下一次失误，他又在障碍边转起圈，刚想道歉，搭子却问：“等下，这步怎么转的？”对方试着模仿，两个人转得东倒西歪。小林笑了：“你不是来带我过关的吗？”搭子答：“先带我学这个。”画面停在两个人一起尝试的瞬间，收束到“找个一起玩的。上TT语音。”回报是一起玩起来，不是通关或技术提升。':index===1?'下班前，主角在语音里随口任命新搭子做自己的“下班监督员”。到点后，对方真的用一句语音来提醒，却没有催促和说教，只陪主角存好文件、关掉电脑。两人把一句玩笑变成一个被记住的小约定。':'主角把借来的伞还回去，以为这段对话也该结束。AI 角色却注意到伞柄上少了一个挂件，自然问起它的去向。主角借机约定明天再来，关系从一次性问答变成可继续的角色对话。';
+ return `<article class="vw-brief-document"><header><h1>${E(meta.title)}</h1><small>故事提案 · v1 · draft</small><p>${E(meta.subtitle)}</p></header><h2>机会与改编依据</h2><p>${E(opportunity)}</p>${first?`<p><strong>历史依据：</strong>report_day0_return=0.060654，基线=0.004290；分子=397.9000，分母=6560.1880；sample_size=873（reported_acquisition_accounts）。周期2026-09-23至2026-10-22，data_as_of=2026-10-29；scope=material，平台/系统/用途编码2/2/1，convert_target未知。is_positive_signal=true仅支持原片整体；未证明新片有效。</p><p><strong>原片结构：</strong>粉色蛋仔因“没人陪我玩蛋仔”在沙滩哭泣，黑色蛋仔建议她去TT语音找一个蛋搭子。她照做后在广场快速匹配到一位队友，对方愿意陪她玩并包容她“菜菜的”。结尾切到真人加游戏画面的口播，引导下载TT语音找专属搭子。</p><p><strong>外部贡献与改编：</strong>借 Columbia《计划不如现挂》把意外当成可玩的内容：玩家碰撞后原地旋转，搭子不评判也不直接救场，而是请教并一起模仿。复制舞步是本次原创回报；不搬明星和原话。</p>`:''}<h2>故事线</h2><p>${E(story)}</p><p><strong>改编要点：</strong>建议 ${E(meta.duration)} 秒、9:16，轻喜剧表达；保留原片的产品参与顺序，把抽象的包容或陪伴变成可见动作。人物、对白和场景均使用原创或已获准资产。</p><h2>分段脚本</h2>${vwBriefTimeline(timelines)}<h2>剧情自检</h2><ul><li>开头的问题有具体原因，结尾动作直接回应这一顾虑。</li><li>产品在关系建立前进入路径，不把匹配速度或结果写成承诺。</li><li>全片不承诺获胜、秒配或必然形成情感关系，剧情只作为个例演绎。</li></ul>${first?`<p class="vw-brief-reference">参考素材 2054131947692691457：<a href="https://weflycdn.52tt.com/ad/mp4/1778578061999321782.mp4" target="_blank" rel="noopener">查看参考视频 ↗</a></p>`:''}<h2>内容生成交接</h2><p>后续内容生成 Agent 只接收本版本 Brief JSON。故事、分段脚本、产品事实、继承与改编、参考、制作约束和待确认项均在 Brief 内；无需另附机会点、候选池或原始分析文件。</p><p>当前状态：draft。草稿可用于评审与后续 Prompt 草拟，不能据此视为已获成片生成或投放批准。</p><h2>人群与使用时刻</h2><ul><li>${first?'想玩派对游戏、担心操作失误被嫌弃的成年玩家。':index===1?'希望有人记住日常小约定、需要轻量陪伴的成年用户。':'喜欢连续角色对话、希望关系感自然延续的成年用户。'}</li></ul><h2>继承依据</h2><ul><li>继承原片的开头吸引、产品参与路径与情绪回报顺序。</li><li>历史正向信号只支持原素材整体，不把创意评分解释为新片效果概率。</li></ul><h2>改编决定</h2><p>${E(opportunity)} 新片使用原创场景、人物与对白呈现。</p><h2>避免沿用</h2><ul><li>不承诺秒配、必然被喜欢、保证获胜或情感结果。</li><li>不复用外部案例的品牌、明星、角色资产及原台词。</li></ul><h2>产品已知事实</h2><p>TT语音的业务方向包括游戏组队和语音社交；Soulmate AI伴侣存在为既有业务确认。具体当前界面与额外能力不由此推出。</p><h2>制作约束与待办</h2><pre><code>{
+  "format": "video",
+  "handoff_notes": [
+    "建议竖版9:16；正式尺寸、版位、Logo及产品截图在制作时核准。",
+    "人物成年、对白原创；演员、角色、画面与声音使用自有或获准资产。",
+    "故事确认后再设计完整Prompt，确认不等于已授权生成或投放。",
+    "实际产品操作路径与UI版本待制作前核准。"
+  ]
+}</code></pre><h2>外部参考与覆盖</h2><p>${first?'<a href="https://www.digitaling.com/projects/379511.html" target="_blank" rel="noopener">Columbia×蒋奇明：计划不如现挂 ↗</a>：迁移从计划失误到共同乐趣的行动逻辑，不复用明星人设。':'本提案只继承参考片的结构机制，具体情节、对白和视觉表达均重新创作。'}</p></article>`;
+}
+function vwBriefTableHTML(scripts,run){return `<section class="vw-brief-list"><p>已调用当前文件夹的 skill，生成 ${scripts.length} 份 TT语音信息流素材 Brief，均含故事线、分段脚本、台词、参考依据及制作待办。</p><div class="vw-brief-table"><div class="head"><b>方向</b><b>Brief</b><b>时长</b></div>${scripts.map((script,index)=>{const meta=vwBriefMeta(script,index,run),key=`${run.localId}:${index}`;return `<div class="row"><strong>${E(meta.direction)}</strong><p><button type="button" data-r-action="vw-open-brief" data-id="${E(key)}"><span>▣</span>${E(meta.title)}</button><small>——${E(meta.subtitle)}</small></p><b>${E(meta.duration)}秒</b></div>`;}).join('')}</div><p class="vw-brief-note">当前均为创意草案；点击 Brief 标题查看完整内容。后续制作可直接使用各 Brief 内的脚本与制作约束。</p></section>`;}
+
 const vwWhitePrompt=`【参考素材：已确认的白模视频，作为唯一运动蓝图】
 严格继承白模视频里全部规则，禁止改动：
 1. 完全沿用白模的相机轨迹、镜头角度、运镜速度
@@ -223,7 +263,7 @@ function vwPublishChoice(run){
 function vwRunHTML(run,c){
  if(run.whiteModel)return vwWhiteRunHTML(run,c);
  const result=run.result,busy=c.videoWorkflow.runs.some(vwBusy),key=run.localId,local=run.localScripts,round=run.generationRound||(local?c.videoWorkflow.runs.filter(item=>item.localScripts).indexOf(run)+1:1);
- return `<div class="vw-response ${local?'vw-native-scripts':''}"><div class="vw-agent-label">${icon('spark')} ${E(run.skillName||'视频创作 Agent')}</div><p class="vw-status ${vwBusy(run)?'vw-progress':''}" role="status">${vwBusy(run)?'<i></i>':''}${E(run.message||'')}</p>${run.connectionError?`<p class="vw-error">${E(run.connectionError)} ${vwButton('vw-resume','重新连接',key)}</p>`:''}${['failed','interrupted'].includes(run.status)?`<div class="vw-error">${run.action==='analyze'||run.action==='remake'?vwButton('vw-retry','重试',key):'你可以在下方补充说明，继续核对当前制作进度。'}</div>`:''}${run.status==='submitted'?vwButton('vw-check-progress','查看生成进度',key):''}${result?`${result.summary?`<p class="vw-result-summary">${E(result.summary)}</p>`:''}${result.segments?.length?`<details class="vw-breakdown"><summary>✦ 参考视频拆解 · ${result.segments.length} 个时间段</summary>${vwAnalysisHTML(result)}</details>`:''}${local?`<p class="vw-round-label">以下是第 ${round} 轮生成的 3 个版本：</p>`:''}${(result.scripts||[]).map((s,i)=>vwScriptHTML(s,i,run)).join('')}${c.videoWorkflow.localScriptFlow&&result.scripts?.length?`<div class="vw-native-question"><b>${result.scripts.length>1?'你更倾向哪种方向？':'这个修改方向是否合适？'}</b><p>${result.scripts.length>1?'可以直接回复“选用第 1 版”，或“修改第 2 版，让开头更直接”；如果都不合适，也可以说“重新生成 3 个版本”。':'可以回复“选用这个版本”，或继续说明修改要求；如果方向不合适，也可以说“重新生成 3 个版本”。'}</p></div>`:''}${result.questions?.length&&!run.answered?`<form class="vw-questions" data-run="${E(key)}"><b>补充这些信息后继续</b>${result.questions.map((q,i)=>`<label>${E(q.title)}<input name="q${i}" list="vw-options-${E(key)}-${i}" required placeholder="选择建议选项，或输入你的回答" ${busy?'disabled':''}><datalist id="vw-options-${E(key)}-${i}">${q.options.map(o=>`<option value="${E(o)}">`).join('')}</datalist></label>`).join('')}<button type="submit" class="solid" ${busy?'disabled':''}>提交并继续</button></form>`:''}${result.project_url||result.video_url?`<div class="vw-output">${result.video_url?`<div class="vw-generated-video"><video controls playsinline preload="metadata" src="${E(result.video_url)}" aria-label="Agent 生成的视频"></video><div><b>演示视频已生成</b><a href="${E(result.video_url)}" download>下载视频</a></div></div>${vwPublishChoice(run)}`:''}${result.project_url?`<a href="${E(result.project_url)}" target="_blank" rel="noopener">打开制作项目 ↗</a>`:''}</div>`:''}`:''}</div>`;
+ return `<div class="vw-response ${local?'vw-native-scripts':''}"><div class="vw-agent-label">${icon('spark')} ${E(run.skillName||'视频创作 Agent')}</div><p class="vw-status ${vwBusy(run)?'vw-progress':''}" role="status">${vwBusy(run)?'<i></i>':''}${E(run.message||'')}</p>${run.connectionError?`<p class="vw-error">${E(run.connectionError)} ${vwButton('vw-resume','重新连接',key)}</p>`:''}${['failed','interrupted'].includes(run.status)?`<div class="vw-error">${run.action==='analyze'||run.action==='remake'?vwButton('vw-retry','重试',key):'你可以在下方补充说明，继续核对当前制作进度。'}</div>`:''}${run.status==='submitted'?vwButton('vw-check-progress','查看生成进度',key):''}${result?`${result.summary?`<p class="vw-result-summary">${E(result.summary)}</p>`:''}${result.segments?.length?`<details class="vw-breakdown"><summary>✦ 参考视频拆解 · ${result.segments.length} 个时间段</summary>${vwAnalysisHTML(result)}</details>`:''}${local?`<p class="vw-round-label">以下是第 ${round} 轮生成的 3 个版本：</p>`:''}${local&&result.scripts?.length>1?vwBriefTableHTML(result.scripts,run):(result.scripts||[]).map((s,i)=>vwScriptHTML(s,i,run)).join('')}${c.videoWorkflow.localScriptFlow&&result.scripts?.length?`<div class="vw-native-question"><b>${result.scripts.length>1?'你更倾向哪种方向？':'这个修改方向是否合适？'}</b><p>${result.scripts.length>1?'可以直接回复“选用第 1 版”，或“修改第 2 版，让开头更直接”；如果都不合适，也可以说“重新生成 3 个版本”。':'可以回复“选用这个版本”，或继续说明修改要求；如果方向不合适，也可以说“重新生成 3 个版本”。'}</p></div>`:''}${result.questions?.length&&!run.answered?`<form class="vw-questions" data-run="${E(key)}"><b>补充这些信息后继续</b>${result.questions.map((q,i)=>`<label>${E(q.title)}<input name="q${i}" list="vw-options-${E(key)}-${i}" required placeholder="选择建议选项，或输入你的回答" ${busy?'disabled':''}><datalist id="vw-options-${E(key)}-${i}">${q.options.map(o=>`<option value="${E(o)}">`).join('')}</datalist></label>`).join('')}<button type="submit" class="solid" ${busy?'disabled':''}>提交并继续</button></form>`:''}${result.project_url||result.video_url?`<div class="vw-output">${result.video_url?`<div class="vw-generated-video"><video controls playsinline preload="metadata" src="${E(result.video_url)}" aria-label="Agent 生成的视频"></video><div><b>演示视频已生成</b><a href="${E(result.video_url)}" download>下载视频</a></div></div>${vwPublishChoice(run)}`:''}${result.project_url?`<a href="${E(result.project_url)}" target="_blank" rel="noopener">打开制作项目 ↗</a>`:''}</div>`:''}`:''}</div>`;
 }
 function vwChoiceHTML(flow,message){
  const script=flow.selectedScript,mix=message.choice==='mix',direct=message.choice==='direct';
@@ -263,6 +303,13 @@ renderAssistant=function(){
  const running=flow.runs.some(vwBusy);send.classList.toggle('vw-stop',running);send.innerHTML=running?'<span aria-hidden="true"></span>':vwIdleSendHTML;send.setAttribute('aria-label',running?'停止生成':'发送');send.title=running?'停止生成':'';send.disabled=running?false:!c.draft?.trim();
 };
 function vwFindScript(key){const flow=chat().videoWorkflow;if(!flow)return null;const [id,index]=key.split(':'),run=flow.runs.find(r=>r.localId===id),script=run?.result?.scripts?.[Number(index)];return script?{flow,run,script,index:Number(index)}:null;}
+R.invoke('vw-open-brief',b=>{
+ const selected=vwFindScript(b.dataset.id);if(!selected)return;
+ const meta=vwBriefMeta(selected.script,selected.index,selected.run);
+ vwBriefDrawer.innerHTML=`<div class="vw-brief-drawer-shell"><header><div><small>BRIEF DETAIL</small><b>${E(meta.title)}</b></div><button type="button" data-r-action="vw-close-brief" aria-label="关闭 Brief 详情">×</button></header><main>${vwBriefDetailHTML(selected.script,selected.index,selected.run)}</main></div>`;
+ if(!vwBriefDrawer.open)vwBriefDrawer.showModal();
+});
+R.invoke('vw-close-brief',()=>vwBriefDrawer.close());
 R.invoke('vw-edit-script',b=>{
  const selected=vwFindScript(b.dataset.id);if(!selected)return;
  const flow=chat().videoWorkflow;flow.editingKey=b.dataset.id;flow.editing=JSON.parse(JSON.stringify(selected.script));vwSave();renderAssistant();
@@ -339,6 +386,7 @@ window.addEventListener('beforeunload',()=>{for(const url of VW.media.values())U
 const vwRemakeStudio=document.createElement('dialog');vwRemakeStudio.id='vw-remake-studio';vwRemakeStudio.setAttribute('aria-label','同款脚本');document.body.append(vwRemakeStudio);
 const vwMaterialDrawer=document.createElement('dialog');vwMaterialDrawer.id='vw-material-drawer';vwMaterialDrawer.setAttribute('aria-label','选择混剪素材');document.body.append(vwMaterialDrawer);
 const vwWhiteLibrary=document.createElement('dialog');vwWhiteLibrary.id='vw-white-library';vwWhiteLibrary.setAttribute('aria-label','选择白模替换引用');document.body.append(vwWhiteLibrary);
+const vwBriefDrawer=document.createElement('dialog');vwBriefDrawer.id='vw-brief-drawer';vwBriefDrawer.setAttribute('aria-label','Brief 详情');document.body.append(vwBriefDrawer);
 const VRS={source:null,segment:null,scripts:[],selected:null,round:1,materials:new Set(),uploads:[]};
 const VWL={tab:'video',draft:new Map()};
 const vwWhiteLibraryItems={
@@ -513,5 +561,5 @@ R.invoke('vw-material-confirm',()=>{if(VRS.materials.size<3)return toast('混剪
 R.invoke('vw-save-video',b=>{const c=chat(),run=c.videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);vwSaveGeneratedVideo(c,run);});
 R.invoke('vw-publish-later',b=>{const c=chat(),run=c.videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);if(!run?.result?.video_url)return;run.publishDecision='later';vwSave();renderAssistant();});
 R.invoke('vw-publish-video',b=>{const c=chat(),run=c.videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);if(!run?.result?.video_url)return;run.publishDecision='publish';vwSave();if(typeof window.apfOpenGeneratedPublish==='function')window.apfOpenGeneratedPublish({id:`generated-${run.localId}`,title:'刚刚生成的视频',kind:'视频',tone:'blue',url:run.result.video_url});else toast('智能投放流程正在加载，请稍后再试');});
-vwRemakeStudio.addEventListener('click',event=>{if(event.target===vwRemakeStudio)vwRemakeStudio.close();});vwMaterialDrawer.addEventListener('click',event=>{if(event.target===vwMaterialDrawer)vwMaterialDrawer.close();});vwWhiteLibrary.addEventListener('click',event=>{if(event.target===vwWhiteLibrary)vwWhiteLibrary.close();});
+vwRemakeStudio.addEventListener('click',event=>{if(event.target===vwRemakeStudio)vwRemakeStudio.close();});vwMaterialDrawer.addEventListener('click',event=>{if(event.target===vwMaterialDrawer)vwMaterialDrawer.close();});vwWhiteLibrary.addEventListener('click',event=>{if(event.target===vwWhiteLibrary)vwWhiteLibrary.close();});vwBriefDrawer.addEventListener('click',event=>{if(event.target===vwBriefDrawer)vwBriefDrawer.close();});
 renderAssistant();
