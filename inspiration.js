@@ -33,12 +33,18 @@ const ipPostBodies={
  earbuds:'从开盒到戴着出门，记录一次完整的通勤体验。降噪、佩戴感和收纳细节都在视频里。'
 };
 const ipAudienceTags={commute:'通勤人群',game:'游戏玩家',app:'职场用户',bottle:'生活方式用户',dashboard:'职场用户',earbuds:'通勤用户'};
+function ipTitleProfile(c){
+ const title=String(c.title||'').replace(/\s/g,'');
+ if(title.includes('tt视频待上传'))return {contentTypes:['游戏广告','抽象'],audienceTag:'游戏玩家',userScene:'喜欢派对游戏和轻松搞笑内容的游戏玩家',emotions:['轻松快乐','好奇'],body:'视频以三名卡通角色共同乘车闯关为主线，用夸张造型、连续障碍和配合失误制造笑点。画面重点呈现角色关系、关卡推进和团队互动，适合借鉴为轻量游戏剧情或组队社交内容。'};
+ if(title.includes('1792578269953388357'))return {contentTypes:['社交剧情','声音'],audienceTag:'语音社交用户',userScene:'喜欢陪伴感内容和语音社交的年轻用户',emotions:['治愈','共鸣'],body:'视频以拟人猫咪和温柔陪伴感为核心，通过柔和画面、角色近景与情绪文案营造被倾听的体验。内容侧重情绪价值和关系氛围，适合关注陪伴、语音互动与社交表达的用户。'};
+ if(title==='tt视频.mp4')return {contentTypes:['游戏广告','语音房'],audienceTag:'游戏社交用户',userScene:'喜欢游戏组队、语音聊天和寻找搭子的玩家',emotions:['好奇','轻松快乐'],body:'视频用游戏世界与语音界面元素快速建立组队场景，通过角色、聊天关系和平台能力展示“找搭子、一起玩”的使用价值。整体信息密度高，重点突出游戏社交氛围和产品入口。'};
+}
 const ipContentTypeValues=new Set(['热点','游戏广告','社交剧情','干货分享','口播','剪辑方式','其他广告','抽象','声音','语音房','聊天记录']);
 const ipEmotionValues=new Set(['视觉满足感','轻松快乐','好奇','认同感','感动','共鸣','爽感','荷尔蒙','治愈']);
 function ipProfile(c){
- const base=ipProfiles[c.art]||{contentTypes:[ipContentTypeValues.has(c.category)?c.category:'热点'],userScene:'关注该内容主题、可能产生观看或互动需求的用户',emotions:['好奇','轻松快乐'],body:c.summary||`视频围绕“${c.title}”展开，通过开场吸引、场景推进、关键信息展示和结果收束，让用户无需完整观看也能了解主要人物、事件、内容价值与行动方向。`};
+ const base=ipTitleProfile(c)||ipProfiles[c.art]||{contentTypes:[ipContentTypeValues.has(c.category)?c.category:'热点'],userScene:'关注该内容主题、可能产生观看或互动需求的用户',emotions:['好奇','轻松快乐'],body:c.summary||`视频围绕“${c.title}”展开，通过开场吸引、场景推进、关键信息展示和结果收束，让用户无需完整观看也能了解主要人物、事件、内容价值与行动方向。`};
  const raw=c.insightTags||[],contentTypes=c.contentTypes||raw.filter(tag=>ipContentTypeValues.has(tag)),emotions=c.emotions||raw.filter(tag=>ipEmotionValues.has(tag));
- const result={contentTypes:contentTypes.length?contentTypes:base.contentTypes,userScene:c.userScene||c.audience||base.userScene,emotions:emotions.length?emotions:base.emotions,body:c.bodyText||base.body};
+ const result={contentTypes:contentTypes.length?contentTypes:base.contentTypes,userScene:c.userScene||c.audience||base.userScene,audienceTag:c.audienceTag||base.audienceTag,emotions:emotions.length?emotions:base.emotions,body:c.bodyText||base.body};
  return {...result,tags:[...new Set([...result.contentTypes,...result.emotions])]};
 }
 function ipPostBody(c){
@@ -50,7 +56,7 @@ function ipPostBody(c){
  const title=String(c.title||'这条视频').replace(/\.(mp4|mov|webm)$/i,'');
  return `分享一条关于“${title}”的视频，记录其中的人物、场景和当下的体验。`;
 }
-function ipAudienceTag(c,profile=ipProfile(c)){return c.audienceTag||ipAudienceTags[c.art]||String(profile.userScene).replace(/^(喜欢|希望|需要|关注)/,'').split(/[、，,]/)[0].slice(0,7)||'兴趣用户';}
+function ipAudienceTag(c,profile=ipProfile(c)){return profile.audienceTag||ipAudienceTags[c.art]||String(profile.userScene).replace(/^(喜欢|希望|需要|关注)/,'').split(/[、，,]/)[0].slice(0,7)||'兴趣用户';}
 function ipFeatureTags(c){const profile=ipProfile(c),values=[...profile.contentTypes.slice(0,2),ipAudienceTag(c,profile),...profile.emotions.slice(0,1)];return `<div class="ip-card-feature-tags" aria-label="视频特点">${[...new Set(values)].map(tag=>`<span>${E(tag)}</span>`).join('')}</div>`;}
 function ipCardBody(c){return `<p class="ip-card-body">${E(ipPostBody(c))}</p>${ipFeatureTags(c)}`;}
 function ipCardMeta(c){const m=ipContentMeta(c);return `<div class="ip-card-publish"><span>发布时间</span><b>${E(m.publishedAt)}</b></div><div class="ip-card-metrics"><span><b>${ipMetric(m.likes)}</b><small>点赞</small></span><span><b>${ipMetric(m.comments)}</b><small>评论</small></span><span><b>${ipMetric(m.favorites)}</b><small>收藏</small></span></div>`;}
