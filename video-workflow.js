@@ -49,15 +49,16 @@ async function vwPoll(reference,run){
   }
  }finally{VW.polling.delete(run.id);}
 }
-function vwAnalysisHTML(result){return `<p class="vw-summary">${E(result.summary||'')}</p>${result.segments?.length?`<div class="vw-timeline">${result.segments.map(s=>`<div><time>${IM.time(s.start)}–${IM.time(s.end)}</time><section><b>${E(s.original)}</b><p>${E(s.mechanism)}</p></section></div>`).join('')}</div>`:''}${result.uncertainties?.length?`<p class="vw-uncertainties">待核实：${result.uncertainties.map(E).join('；')}</p>`:''}`;}
+function vwAnalysisHTML(result){return `<section class="it-analysis"><h3>内容概要</h3><p class="vw-summary">${E(result.summary||'暂无内容概要')}</p><h3>分镜脚本 <small>${result.segments?.length||0} 个分镜</small></h3>${vwStoryboardHTML(result)}</section>`;}
+function vwStoryboardHTML(result){return result.segments?.length?`<div class="vw-timeline">${result.segments.map(s=>`<div><time>${IM.time(s.start)}–${IM.time(s.end)}</time><section><b>${E(s.original)}</b></section></div>`).join('')}</div>`:'<div class="ip-empty"><h3>这条视频还没有分镜脚本</h3><p>当前仅展示已有的内容概要。</p></div>';}
 function vwDrawAnalysis(c){
  if(c.mediaType==='image')return;
  const ref=vwReference(c),entry=workspace.videoAnalyses[vwAnalysisKey(ref)];if(!entry)return;
  const host=$('#ip-segments');if(!host)return;
  const run=entry.run;
- const badge=ipDrawer.querySelector('.ip-detail-summary .tag');if(badge)badge.textContent=run.localAnalysis?'灵感内容解析 Skill · 演示':'用户提供 · 视频技能拆解';
- const heading=ipDrawer.querySelector('.ip-breakdown-heading h3');if(heading)heading.innerHTML=`分段拆解 <small>${run.result?.segments?.length||0} 个时间段</small>`;
- host.innerHTML=`<section class="vw-analysis"><div class="vw-analysis-heading"><b>${E(run.skillName||'视频技能拆解')}</b><span>${run.localAnalysis?(run.status==='completed'?'已完成内容结构与可借鉴机制解析':'正在识别内容结构与可借鉴机制'):'基于参考视频的实际画面'}</span></div>${run.result?vwAnalysisHTML(run.result):''}${vwBusy(run)?`<p role="status" class="vw-progress"><i></i>${E(run.message)}</p>`:!run.result?`<p role="alert">${E(run.message)}</p>`:''}${run.connectionError?`<p role="alert">${E(run.connectionError)}</p>${vwButton('vw-analysis-resume','重新连接',c.id)}`:''}${['failed','interrupted'].includes(run.status)?vwButton('vw-analyze','重新拆解',c.id):''}</section>`;
+ const headings=ipDrawer.querySelectorAll('.ip-breakdown-heading h3');if(headings[0])headings[0].textContent='内容概要';if(headings[1])headings[1].innerHTML=`分镜脚本 <small>${run.result?.segments?.length||0} 个时间段</small>`;
+ const summary=ipDrawer.querySelector('#ip-summary');if(summary&&run.result?.summary)summary.textContent=run.result.summary;
+ host.innerHTML=`<section class="vw-analysis">${run.result?vwStoryboardHTML(run.result):''}${vwBusy(run)?`<p role="status" class="vw-progress"><i></i>${E(run.message)}</p>`:!run.result?`<p role="alert">${E(run.message)}</p>`:''}${run.connectionError?`<p role="alert">${E(run.connectionError)}</p>${vwButton('vw-analysis-resume','重新连接',c.id)}`:''}${['failed','interrupted'].includes(run.status)?vwButton('vw-analyze','重新拆解',c.id):''}</section>`;
 }
 function vwLocalAnalysisSegments(c){
  const duration=Math.max(12,Number(c.duration)||30),hook=Math.min(4,duration*.18),middle=Math.max(hook+3,duration*.68),end=Math.max(middle+2,duration-3),base=c.segments?.length?c.segments.map(segment=>({...segment})):[
