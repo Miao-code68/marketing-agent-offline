@@ -54,23 +54,6 @@
       button.classList.toggle('active', sectionByAction[button.dataset.rAction] === selectedSection);
     });
 
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const day = 86400000;
-    const history = workspace.projects
-      .flatMap(project => (project.chats || []).map(chat => ({
-        project,
-        chat,
-        at: chat.updated || chat.created || 0
-      })))
-      .sort((a, b) => b.at - a.at);
-    const groups = [
-      ['今天', row => row.at >= today],
-      ['昨天', row => row.at >= today - day && row.at < today],
-      ['7天内', row => row.at >= today - 7 * day && row.at < today - day],
-      ['30天内', row => row.at >= today - 30 * day && row.at < today - 7 * day],
-      ['更早', row => row.at < today - 30 * day]
-    ];
     const tasks = (R.data.tasks || []).filter(task => task.projectId === state.id);
     const taskRows = tasks.length
       ? tasks.slice(0, 5).map(task => `<button type="button" class="ad-agent-task-row" data-r-action="wb-automation" title="${E(task.title)}">${E(task.title)}</button>`).join('')
@@ -83,17 +66,11 @@
       const projectRows = projectsForExpert.map(project => {
         const chats = [...(project.chats || [])].sort((a,b)=>Number(b.expertPinned)-Number(a.expertPinned)||(b.updated||b.created||0)-(a.updated||a.created||0));
         const chatRows = chats.map(chat => `<div class="ad-agent-expert-chat-row ${project.id===state.id&&chat.id===state.chatId?'active':''}"><button type="button" class="ad-agent-expert-chat-main" data-r-action="aw-select-chat" data-id="${E(chat.id)}" data-owner="${E(project.id)}" title="${E(chat.title)}"><span>${E(chat.title)}</span></button><button type="button" class="ad-agent-node-pin ${chat.expertPinned?'active':''}" data-r-action="wb-pin-expert-chat" data-id="${E(chat.id)}" data-owner="${E(project.id)}" aria-label="${chat.expertPinned?'取消置顶':'置顶'}对话${E(chat.title)}" title="${chat.expertPinned?'取消置顶':'置顶'}">${pinIcon}</button><details class="ad-agent-node-menu"><summary aria-label="${E(chat.title)}更多操作">•••</summary><div><button type="button" data-r-action="wb-rename-expert-chat" data-id="${E(chat.id)}" data-owner="${E(project.id)}">重命名</button><button type="button" data-r-action="wb-delete-expert-chat" data-id="${E(chat.id)}" data-owner="${E(project.id)}">删除</button></div></details></div>`).join('');
-        return `<div class="ad-agent-expert-project"><div class="ad-agent-expert-project-row"><button type="button" class="ad-agent-expert-project-main" data-r-action="aw-folder" data-id="${E(project.id)}" title="${E(project.name)}">${icon('folder')}<span>${E(project.name)}</span></button><button type="button" class="ad-agent-project-add" data-r-action="wb-expert-project-chat" data-id="${E(expert.id)}" data-owner="${E(project.id)}" aria-label="在${E(project.name)}中新建对话" title="新建对话">＋</button><button type="button" class="ad-agent-node-pin ${project.expertPinned?'active':''}" data-r-action="wb-pin-expert-project" data-id="${E(project.id)}" aria-label="${project.expertPinned?'取消置顶':'置顶'}项目${E(project.name)}" title="${project.expertPinned?'取消置顶':'置顶'}">${pinIcon}</button><details class="ad-agent-node-menu"><summary aria-label="${E(project.name)}更多操作">•••</summary><div><button type="button" data-r-action="aw-rename-project" data-id="${E(project.id)}">重命名</button><button type="button" data-r-action="aw-delete-project" data-id="${E(project.id)}">删除</button><button type="button" data-r-action="wb-expert-project-chat" data-id="${E(expert.id)}" data-owner="${E(project.id)}">新建会话</button></div></details></div><div class="ad-agent-expert-chats">${chatRows||'<small>暂无对话</small>'}</div></div>`;
+        return `<div class="ad-agent-expert-project"><div class="ad-agent-expert-project-row"><button type="button" class="ad-agent-expert-project-main" data-r-action="aw-folder" data-id="${E(project.id)}" title="${E(project.name)}">${icon('folder')}<span>${E(project.name)}</span></button><button type="button" class="ad-agent-node-pin ${project.expertPinned?'active':''}" data-r-action="wb-pin-expert-project" data-id="${E(project.id)}" aria-label="${project.expertPinned?'取消置顶':'置顶'}项目${E(project.name)}" title="${project.expertPinned?'取消置顶':'置顶'}">${pinIcon}</button><details class="ad-agent-node-menu"><summary aria-label="${E(project.name)}更多操作">•••</summary><div><button type="button" data-r-action="aw-rename-project" data-id="${E(project.id)}">重命名</button><button type="button" data-r-action="aw-delete-project" data-id="${E(project.id)}">删除</button><button type="button" data-r-action="wb-expert-project-chat" data-id="${E(expert.id)}" data-owner="${E(project.id)}">新建会话</button></div></details></div><div class="ad-agent-expert-chats">${chatRows||'<small>暂无对话</small>'}</div></div>`;
       }).join('');
       return `<div class="ad-agent-expert-unit"><div class="ad-agent-expert-wrap ${activeExpertId === expert.id ? 'active' : ''}"><button type="button" class="ad-agent-expert-row" data-r-action="wb-sidebar-expert" data-id="${E(expert.id)}" title="${E(expert.description || expert.name)}"><span>${typeof wbExpertAvatarMarkup==='function'?wbExpertAvatarMarkup(expert.avatar,expert.name.slice(0,1)):E(expert.avatar||expert.name.slice(0,1))}</span><b>${E(expert.name)}</b></button><button type="button" class="ad-agent-expert-pin ${expert.pinned?'active':''}" data-r-action="wb-pin-expert" data-id="${E(expert.id)}" aria-label="${expert.pinned?'取消置顶':'置顶'}${E(expert.name)}" title="${expert.pinned?'取消置顶':'置顶'}">${pinIcon}</button><details class="ad-agent-expert-menu"><summary aria-label="${E(expert.name)}更多操作">•••</summary><div><button type="button" data-r-action="wb-rename-expert" data-id="${E(expert.id)}">重命名</button><button type="button" data-r-action="wb-delete-expert" data-id="${E(expert.id)}">删除</button><button type="button" data-r-action="wb-expert-new-project" data-id="${E(expert.id)}">新建项目</button><button type="button" data-r-action="wb-expert-new-chat" data-id="${E(expert.id)}">新建对话</button></div></details></div>${projectRows?`<div class="ad-agent-expert-projects">${projectRows}</div>`:''}</div>`;
     };
     const expertRows = experts.map(expertRow).join('') || '<p class="ad-agent-empty-task">还没有专家</p>';
-    const historyRows = groups.map(([label, matches]) => {
-      const rows = history.filter(matches);
-      if (!rows.length) return '';
-      return `<section class="ad-agent-history-group"><h3>${label}</h3>${rows.map(({ project, chat }) => `<button type="button" class="ad-agent-history-row ${project.id === state.id && chat.id === state.chatId && !AW.folder ? 'active' : ''}" data-r-action="aw-select-chat" data-id="${E(chat.id)}" data-owner="${E(project.id)}" title="${E(chat.title)}">${E(chat.title)}</button>`).join('')}</section>`;
-    }).join('') || '<p class="ad-agent-empty-task">还没有历史对话</p>';
-
     projects.innerHTML = `
       <section class="ad-agent-side-section">
         <div class="ad-agent-side-label">自动化任务</div>
@@ -102,10 +79,6 @@
       <section class="ad-agent-side-section ad-agent-expert-section">
         <div class="ad-agent-side-label"><span>专家</span><button type="button" data-r-action="wb-new-expert" aria-label="新建专家">＋</button></div>
         ${expertRows}
-      </section>
-      <section class="ad-agent-side-section">
-        <div class="ad-agent-side-label">历史对话</div>
-        ${historyRows}
       </section>
     `;
   }
