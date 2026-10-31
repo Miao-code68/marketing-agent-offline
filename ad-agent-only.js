@@ -78,7 +78,7 @@
     const activeExpertId = typeof awChat === 'function' ? awChat()?.expert?.id : null;
     const coreExperts = typeof wbCoreExperts !== 'undefined' ? wbCoreExperts : [];
     const myExperts = workspace.experts || [];
-    const expertRow = (expert, removable = false) => `<div class="ad-agent-expert-wrap ${activeExpertId === expert.id ? 'active' : ''}"><button type="button" class="ad-agent-expert-row" data-r-action="wb-sidebar-expert" data-id="${E(expert.id)}" title="${E(expert.description || expert.name)}"><span>${E(expert.avatar || expert.name.slice(0, 1))}</span><b>${E(expert.name)}</b></button>${removable ? `<button type="button" class="ad-agent-expert-delete" data-r-action="wb-delete-expert" data-id="${E(expert.id)}" aria-label="删除${E(expert.name)}">×</button>` : ''}</div>`;
+    const expertRow = (expert, removable = false) => `<div class="ad-agent-expert-wrap ${activeExpertId === expert.id ? 'active' : ''}"><button type="button" class="ad-agent-expert-row" data-r-action="wb-sidebar-expert" data-id="${E(expert.id)}" title="${E(expert.description || expert.name)}"><span>${typeof wbExpertAvatarMarkup==='function'?wbExpertAvatarMarkup(expert.avatar,expert.name.slice(0,1)):E(expert.avatar||expert.name.slice(0,1))}</span><b>${E(expert.name)}</b></button>${removable ? `<button type="button" class="ad-agent-expert-delete" data-r-action="wb-delete-expert" data-id="${E(expert.id)}" aria-label="删除${E(expert.name)}">×</button>` : ''}</div>`;
     const coreExpertRows = coreExperts.map(expert => expertRow(expert)).join('');
     const myExpertRows = myExperts.length ? myExperts.map(expert => expertRow(expert, true)).join('') : '<p class="ad-agent-empty-task">还没有自建专家</p>';
     const historyRows = groups.map(([label, matches]) => {
