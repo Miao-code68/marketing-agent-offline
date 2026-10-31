@@ -487,3 +487,25 @@ html.ad-agent-only .ad-agent-expert-wrap:hover .ad-agent-expert-delete,html.ad-a
 html.ad-agent-only .ad-agent-expert-delete:hover{background:#fff0f0;color:#c45258}
 
 .ad-agent-expert-row>span img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+
+/* Unified expert list, per-expert menus and projects. */
+html.ad-agent-only .ad-agent-expert-wrap{padding-right:2px}
+html.ad-agent-only .ad-agent-expert-row{padding-right:58px}
+html.ad-agent-only .ad-agent-expert-pin{position:absolute;right:30px;display:grid;width:23px;height:23px;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:#9aa5b4;font-size:14px;opacity:0}
+html.ad-agent-only .ad-agent-expert-pin.active{color:#3974d9;opacity:1}
+html.ad-agent-only .ad-agent-expert-menu{position:absolute;z-index:12;right:4px}
+html.ad-agent-only .ad-agent-expert-menu>summary{display:grid;width:24px;height:24px;place-items:center;border-radius:6px;color:#8c96a5;font-size:11px;letter-spacing:-1px;list-style:none;cursor:pointer;opacity:0}
+html.ad-agent-only .ad-agent-expert-menu>summary::-webkit-details-marker{display:none}
+html.ad-agent-only .ad-agent-expert-wrap:hover .ad-agent-expert-pin,html.ad-agent-only .ad-agent-expert-wrap:hover .ad-agent-expert-menu>summary,html.ad-agent-only .ad-agent-expert-menu[open]>summary,html.ad-agent-only .ad-agent-expert-wrap.active .ad-agent-expert-menu>summary{opacity:1}
+html.ad-agent-only .ad-agent-expert-pin:hover,html.ad-agent-only .ad-agent-expert-menu>summary:hover{background:#eef3fb;color:#326fd5}
+html.ad-agent-only .ad-agent-expert-menu>div{position:absolute;z-index:40;top:27px;right:0;width:126px;padding:5px;border:1px solid #dfe5ef;border-radius:10px;background:#fff;box-shadow:0 12px 32px #20385e2b}
+html.ad-agent-only .ad-agent-expert-menu button{display:block;width:100%;padding:8px 10px;border:0;border-radius:7px;background:transparent;color:#4f5866;font-size:10px;text-align:left}
+html.ad-agent-only .ad-agent-expert-menu button:hover{background:#f0f4fa;color:#2f6fd6}
+html.ad-agent-only .ad-agent-expert-projects{margin:1px 0 5px 31px;border-left:1px solid #dbe4f1;padding-left:7px}
+html.ad-agent-only .ad-agent-expert-projects>div{display:grid;grid-template-columns:minmax(0,1fr) 24px;align-items:center}
+html.ad-agent-only .ad-agent-expert-projects button{display:flex;min-width:0;align-items:center;gap:5px;padding:5px 6px;border:0;border-radius:6px;background:transparent;color:#7b8797;font-size:9px;text-align:left}
+html.ad-agent-only .ad-agent-expert-projects button:first-child span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html.ad-agent-only .ad-agent-expert-projects button svg{width:12px;height:12px;flex:none}
+html.ad-agent-only .ad-agent-expert-projects button:last-child{justify-content:center;font-size:14px;opacity:0}
+html.ad-agent-only .ad-agent-expert-projects>div:hover button:last-child{opacity:1}
+html.ad-agent-only .ad-agent-expert-projects button:hover{background:#edf3fc;color:#316fd5}

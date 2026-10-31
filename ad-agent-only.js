@@ -76,11 +76,12 @@
       ? tasks.slice(0, 5).map(task => `<button type="button" class="ad-agent-task-row" data-r-action="wb-automation" title="${E(task.title)}">${E(task.title)}</button>`).join('')
       : '<p class="ad-agent-empty-task">暂无自动化任务</p>';
     const activeExpertId = typeof awChat === 'function' ? awChat()?.expert?.id : null;
-    const coreExperts = typeof wbCoreExperts !== 'undefined' ? wbCoreExperts : [];
-    const myExperts = workspace.experts || [];
-    const expertRow = (expert, removable = false) => `<div class="ad-agent-expert-wrap ${activeExpertId === expert.id ? 'active' : ''}"><button type="button" class="ad-agent-expert-row" data-r-action="wb-sidebar-expert" data-id="${E(expert.id)}" title="${E(expert.description || expert.name)}"><span>${typeof wbExpertAvatarMarkup==='function'?wbExpertAvatarMarkup(expert.avatar,expert.name.slice(0,1)):E(expert.avatar||expert.name.slice(0,1))}</span><b>${E(expert.name)}</b></button>${removable ? `<button type="button" class="ad-agent-expert-delete" data-r-action="wb-delete-expert" data-id="${E(expert.id)}" aria-label="删除${E(expert.name)}">×</button>` : ''}</div>`;
-    const coreExpertRows = coreExperts.map(expert => expertRow(expert)).join('');
-    const myExpertRows = myExperts.length ? myExperts.map(expert => expertRow(expert, true)).join('') : '<p class="ad-agent-empty-task">还没有自建专家</p>';
+    const experts = typeof wbSidebarExperts === 'function' ? wbSidebarExperts() : [];
+    const expertRow = expert => {
+      const projectsForExpert = workspace.projects.filter(project => project.expertId === expert.id);
+      return `<div class="ad-agent-expert-unit"><div class="ad-agent-expert-wrap ${activeExpertId === expert.id ? 'active' : ''}"><button type="button" class="ad-agent-expert-row" data-r-action="wb-sidebar-expert" data-id="${E(expert.id)}" title="${E(expert.description || expert.name)}"><span>${typeof wbExpertAvatarMarkup==='function'?wbExpertAvatarMarkup(expert.avatar,expert.name.slice(0,1)):E(expert.avatar||expert.name.slice(0,1))}</span><b>${E(expert.name)}</b></button><button type="button" class="ad-agent-expert-pin ${expert.pinned?'active':''}" data-r-action="wb-pin-expert" data-id="${E(expert.id)}" aria-label="${expert.pinned?'取消置顶':'置顶'}${E(expert.name)}" title="${expert.pinned?'取消置顶':'置顶'}">⌖</button><details class="ad-agent-expert-menu"><summary aria-label="${E(expert.name)}更多操作">•••</summary><div><button type="button" data-r-action="wb-rename-expert" data-id="${E(expert.id)}">重命名</button><button type="button" data-r-action="wb-delete-expert" data-id="${E(expert.id)}">删除</button><button type="button" data-r-action="wb-expert-new-project" data-id="${E(expert.id)}">新建项目</button><button type="button" data-r-action="wb-expert-new-chat" data-id="${E(expert.id)}">新建对话</button></div></details></div>${projectsForExpert.length?`<div class="ad-agent-expert-projects">${projectsForExpert.map(project=>`<div><button type="button" data-r-action="aw-folder" data-id="${E(project.id)}" title="${E(project.name)}">${icon('folder')}<span>${E(project.name)}</span></button><button type="button" data-r-action="wb-expert-project-chat" data-id="${E(expert.id)}" data-owner="${E(project.id)}" aria-label="在${E(project.name)}中新建对话">＋</button></div>`).join('')}</div>`:''}</div>`;
+    };
+    const expertRows = experts.map(expertRow).join('') || '<p class="ad-agent-empty-task">还没有专家</p>';
     const historyRows = groups.map(([label, matches]) => {
       const rows = history.filter(matches);
       if (!rows.length) return '';
@@ -93,12 +94,8 @@
         ${taskRows}
       </section>
       <section class="ad-agent-side-section ad-agent-expert-section">
-        <div class="ad-agent-side-label">专家</div>
-        ${coreExpertRows}
-      </section>
-      <section class="ad-agent-side-section ad-agent-expert-section">
-        <div class="ad-agent-side-label"><span>我的专家</span><button type="button" data-r-action="wb-new-expert" aria-label="新建专家">＋</button></div>
-        ${myExpertRows}
+        <div class="ad-agent-side-label"><span>专家</span><button type="button" data-r-action="wb-new-expert" aria-label="新建专家">＋</button></div>
+        ${expertRows}
       </section>
       <section class="ad-agent-side-section">
         <div class="ad-agent-side-label">历史对话</div>

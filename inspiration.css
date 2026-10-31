@@ -97,3 +97,14 @@
 [data-appearance=dark] .ip-summary-feature-grid>section,[data-appearance=dark] .ip-summary-panel>#ip-summary{border-color:#435875;background:#2d405c}[data-appearance=dark] .ip-user-scene{color:#c1d1e6}
 
 .ip-detail-summary-block{margin-top:20px}.ip-detail-summary-block h3{margin:0 0 10px;color:#3c587e;font-size:13px}.ip-detail-summary-block p{margin:0;padding:17px 18px;border:1px solid #e6edf7;border-radius:11px;background:#f6f9fd;color:#576f91;font-size:12px;line-height:2}.ip-trend-content-grid .ip-card-feature-tags span:nth-child(n+4){display:none}[data-appearance=dark] .ip-card-feature-tags span{border-color:#435875;background:#2d405c;color:#b8cce8}[data-appearance=dark] .ip-detail-summary-block p{border-color:#435875;background:#2d405c;color:#c1d1e6}
+
+/* Video card controls occupy only the bottom strip; preview and full screen stay available in the center. */
+.ip-card .ip-hover{inset:auto 0 0;height:54px;display:flex;justify-content:center;align-items:flex-end;background:linear-gradient(transparent,#162c486e);backdrop-filter:none;overflow:visible;pointer-events:none}
+.ip-card .ip-hover .ip-card-actions{display:flex;width:100%;height:42px;align-items:center;justify-content:center;margin:0;padding:0 10px;box-sizing:border-box;pointer-events:auto}
+.ip-card .ip-hover .ip-card-actions>button{width:100%;min-width:0;padding:8px 14px;border:1px solid #ffffff80;border-radius:9px;background:#173657b8;color:#fff;box-shadow:none}
+.ip-card .ip-play-actions{position:absolute;left:50%;bottom:68px;display:flex;gap:9px;transform:translateX(-50%);pointer-events:auto}
+.ip-card .ip-hover .ip-play,.ip-card .ip-hover .ip-expand{position:static;display:grid;width:40px;height:40px;place-items:center;padding:0;border:1px solid #ffffffb8;border-radius:50%;background:#183550c7;color:#fff;font-size:15px;box-shadow:0 7px 18px #10263f45}
+.ip-card .ip-hover .ip-expand{font-size:18px}
+.ip-card .ip-duration{bottom:58px}
+.ip-card .ip-inline-host{z-index:5}
+@media(hover:none){.ip-card .ip-hover{opacity:1}.ip-card .ip-play-actions{bottom:64px}.ip-card .ip-duration{bottom:56px}}
