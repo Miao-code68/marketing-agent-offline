@@ -1,6 +1,6 @@
 'use strict';
 // Real skill jobs stay attached to the originating conversation, even after navigation.
-const VW={polling:new Set(),opening:new Set(),media:new Map(),whiteTimers:new Set(),canvasAutoOpened:new Set()};
+const VW={polling:new Set(),opening:new Set(),media:new Map(),whiteTimers:new Set(),canvasTimers:new Map()};
 workspace.videoAnalyses??={};
 const vwBusy=r=>['preparing','queued','running'].includes(r?.status);
 const vwIdleSendHTML=$('#send').innerHTML;
@@ -312,10 +312,10 @@ function vwWhiteRunHTML(run,c){
 }
 function vwPublishChoice(run){
  const decision=run.publishDecision;
- if(decision==='saved')return `<div class="vw-publish-choice decided saved"><span>✓ 已保存到资产库，可在“资产 → AI 成片库”继续查看和使用。</span></div>`;
- if(decision==='later')return `<div class="vw-publish-choice decided"><span>已选择暂不发布，本次成片仍保留在当前对话中。</span><button data-r-action="vw-save-video" data-id="${E(run.localId)}">保存到资产库</button><button data-r-action="vw-publish-video" data-id="${E(run.localId)}">发布计划</button></div>`;
- if(decision==='publish')return `<div class="vw-publish-choice decided"><span>已带入智能投放，继续选择账户、广告组和计划。</span></div>`;
- return `<div class="vw-publish-choice"><div><small>NEXT STEP</small><b>视频已经生成，接下来如何处理？</b><span>可以保存到 AI 成片库，也可以暂不发布或直接创建发布计划。</span></div><button class="save" data-r-action="vw-save-video" data-id="${E(run.localId)}">保存到资产库</button><button data-r-action="vw-publish-later" data-id="${E(run.localId)}">暂不发布</button><button class="solid" data-r-action="vw-publish-video" data-id="${E(run.localId)}">发布计划</button></div>`;
+ if(decision==='saved')return `<p>已保存到资产库，可在“资产 → AI 成片库”继续查看和使用。</p>`;
+ if(decision==='later')return `<p>已暂不处理，本次成片会保留在当前对话中。后续仍可回复“保存到资产库”或“发布计划”。</p>`;
+ if(decision==='publish')return `<p>${run.publishAssignee?`发布计划已移交给${E(run.publishAssignee)}。`:'已进入发布计划，请继续回复要移交的成员姓名，或回复“我来处理”。'}</p>`;
+ return `<p>视频已经生成。请直接回复“保存到资产库”，或回复“发布计划”继续创建发布任务；发布计划也可以移交给指定成员处理。</p>`;
 }
 function vwBriefRevisionHTML(run){
  const script=run.result?.scripts?.[0],key=`${run.localId}:0`;if(!script)return '';
@@ -366,6 +366,10 @@ async function vwRenderVideo(el,reference){
  }catch(e){if(el.isConnected)el.replaceWith(document.createTextNode('参考视频暂不可读取'));}
 }
 const vwOriginalRender=renderAssistant;
+function vwScheduleMetarealmCanvas(c){
+ const flow=c?.videoWorkflow,due=flow?.metarealmCanvasAt;if(!due||flow.metarealmCanvasOpened||VW.canvasTimers.has(c.id))return;
+ const timer=setTimeout(()=>{VW.canvasTimers.delete(c.id);if(chat()!==c||!flow.whiteModelFlow)return;flow.metarealmCanvasOpened=true;vwSave();if(!vwCanvasDrawer.open)vwOpenMetarealmCanvas();},Math.max(0,due-Date.now()));VW.canvasTimers.set(c.id,timer);
+}
 renderAssistant=function(){
  const c=chat(),flow=c.videoWorkflow;
  if(flow?.localScriptFlow){const request=c.messages.find(item=>item.role==='user'&&(item.videoScriptRequest||item.text?.startsWith('选择“视频二创”')));if(request){request.text='基于这个参考视频，生产3个不同的原创脚本并制作新视频';request.videoScriptRequest={id:flow.reference?.id,title:flow.reference?.title||'已选参考视频'};}flow.runs.filter(item=>item.localScripts&&item.message?.includes('请先选择一版')).forEach(item=>item.message='脚本拆解 Skill 已完成参考内容分析，并生成 3 个不同版本的原创脚本。请告诉我更倾向哪种方向，也可以直接提出修改要求。');c.messages.forEach(message=>{if(message.videoPlanConfirmation&&message.text?.includes('下方确认'))message.text='脚本已定稿。请直接回复“确认继续”进入下一步；如需调整，请说明要修改的开头、场景、搭子回应、台词或结尾，也可以回复“重新生成 3 个方向”。';if(message.videoProductionMethod&&message.text?.includes('下方选择'))message.text='当前方案已确认。请选择一种推进方式并直接回复：“全自动制作直到交付终片（推荐）”、“按阶段验收制作”或“仅做只读评估，不执行生成”。制作涉及生成费用及可能的素材检测费用，执行前会先预估。';});}
@@ -375,8 +379,9 @@ renderAssistant=function(){
  assistantShell.classList.toggle('vw-conversation',!!flow&&assistantTab==='chat'&&!AW.folder&&WB.agentSection==='chat');
  const send=$('#send');send.classList.remove('vw-stop');send.innerHTML=vwIdleSendHTML;send.setAttribute('aria-label','发送');
  if(!flow||assistantTab!=='chat'||AW.folder||WB.agentSection!=='chat')return;
+ vwScheduleMetarealmCanvas(c);
  if(!flow.whiteModelFlow)$('#aw-context-chips').insertAdjacentHTML('afterbegin',`<span class="vw-selected-skill">${icon('spark')}${flow.localScriptFlow&&flow.mode==='remake'?'脚本拆解 Skill':flow.mode==='generate'?'视频生成':'制作同款'}</span><span>▧ ${E(flow.reference.title)}</span>`);
- $('#prompt').placeholder=flow.editing?'描述你想修改的内容，例如：开头更简洁，保留第二段的场景…':'补充产品信息、调整脚本，或继续视频制作…';
+ $('#prompt').placeholder=flow.editing?'描述你想修改的内容，例如：开头更简洁，保留第二段的场景…':'给 Wefly 发送消息，@ 引用策略预设';
  if(flow.mode==='white-prompt'&&flow.whiteConfirmed){const prompt=$('#prompt'),spaced=vwWhiteReferenceSpacing(prompt.value);if(spaced!==prompt.value){prompt.value=c.draft=spaced;flow.whitePromptBase=vwWhiteReferenceSpacing(flow.whitePromptBase||vwWhitePromptBase(spaced));vwSave();}}
  $('#assistant-body').querySelectorAll('.message').forEach((el,i)=>{
   const m=c.messages[i];if(!m)return;
@@ -391,7 +396,6 @@ renderAssistant=function(){
   if(m.videoSampleReview){el.classList.add('vw-rich-message');el.innerHTML=vwSampleReviewHTML();}
  if(m.videoAutomaticResult){el.classList.add('vw-rich-message');el.innerHTML=vwAutomaticResultHTML();}
  });
- const whiteRun=flow.runs.find(run=>run.whiteModel&&run.whiteReport);if(whiteRun&&!VW.canvasAutoOpened.has(c.id)){VW.canvasAutoOpened.add(c.id);requestAnimationFrame(()=>{if(chat()===c&&!vwCanvasDrawer.open)vwOpenMetarealmCanvas();});}
  const composer=$('#composer'),composerArea=composer?.closest('.composer-area');composerArea?.querySelector('#vw-native-question-panel')?.remove();composerArea?.classList.remove('vw-native-question-active');
  const nativeQuestion=vwNativeQuestionPanel(flow);if(nativeQuestion&&composer){composer.insertAdjacentHTML('beforebegin',nativeQuestion);composerArea?.classList.add('vw-native-question-active');const input=$('#vw-native-question-input'),sendQuestion=()=>R.actions['vw-native-question-send']?.();input?.addEventListener('input',()=>{$('#vw-native-question-panel [data-r-action="vw-native-question-send"]').disabled=!input.value.trim();});input?.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendQuestion();}});}
  $('#assistant-body').querySelectorAll('.vw-questions').forEach(form=>form.onsubmit=e=>{e.preventDefault();const run=flow.runs.find(r=>r.localId===form.dataset.run);if(!run||flow.runs.some(vwBusy))return;const values=new FormData(form),answer=run.result.questions.map((q,i)=>`${q.title}：${values.get('q'+i)}`).join('\n');run.answered=answer;vwSave();vwSend(c,answer,'continue',null,run.id);});
@@ -511,7 +515,17 @@ function vwConfirmStage(c,text='确认参考图并继续'){
  const stage=vwLatestMessage(c,'videoStageReview');if(stage)stage.stageConfirmed=true;if(vwCanvasDrawer.open)vwCanvasDrawer.close();c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'',time:now(),videoSampleReview:true});c.draft='';c.videoWorkflow.mode='sample-review';state.messages=c.messages;vwSave();renderAssistant();setTimeout(()=>$('#assistant-body .vw-sample-review:last-child')?.scrollIntoView({behavior:'smooth',block:'start'}),0);
 }
 const vwOriginalSubmit=$('#composer').onsubmit;
-$('#composer').onsubmit=function(e){const c=chat();if(!c.videoWorkflow)return vwOriginalSubmit.call(this,e);e.preventDefault();const f=c.videoWorkflow;if(f.runs.some(vwBusy))return vwStopCurrent(c);const text=$('#prompt').value.trim();if(!text)return;if(f.mode==='white-model'&&f.whiteModelFlow)return vwHandleWhiteModelReply(c,text);if(f.mode==='white-prompt'&&f.whiteConfirmed)return vwGenerateWhiteSubject(c,text);if(f.localScriptFlow){if(f.mode==='confirm-plan')return vwHandlePlanConfirmation(c,text);if(f.mode==='production-method')return vwHandleProductionMethod(c,text);if(f.mode==='stage-review')return vwHandleStageReply(c,text);if(f.mode==='choice')return vwHandleProductionChoice(c,text);return f.editing?vwLocalRefine(c,text):vwHandleNativeScriptReply(c,text);}vwSend(c,text,f.editing?'refine':'continue',f.editing||null,f.editingParent||null);};
+function vwLatestGeneratedRun(flow){return [...(flow?.runs||[])].reverse().find(run=>run.result?.video_url);}
+function vwHandleGeneratedAction(c,text){
+ const flow=c.videoWorkflow,run=vwLatestGeneratedRun(flow);if(!run)return false;
+ if(/保存.*资产库|资产库.*保存/.test(text)){c.messages.push({role:'user',text,time:now()});c.draft='';state.messages=c.messages;vwSave();renderAssistant();vwSaveGeneratedVideo(c,run);return true;}
+ if(flow.mode==='publish-handoff'&&/(移交给|交给|指定给?)/.test(text)){const assignee=text.replace(/^.*?(?:移交给|交给|指定给?)/,'').replace(/[。！!]+$/,'').trim()||'指定成员';c.messages.push({role:'user',text,time:now()},{role:'assistant',text:`发布计划已移交给${assignee}，对方会在“我的任务”中收到待处理任务。`,time:now()});c.draft='';run.publishAssignee=assignee;run.publishDecision='publish';flow.mode='publish-complete';state.messages=c.messages;vwSave();renderAssistant();toast(`已移交给${assignee}`);return true;}
+ if(flow.mode==='publish-handoff'&&/我来|自己|由我|继续处理/.test(text)){c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'发布计划已保留给你继续处理。',time:now()});c.draft='';flow.mode='publish-complete';state.messages=c.messages;vwSave();renderAssistant();return true;}
+ if(/发布计划|创建发布|发布任务/.test(text)){c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'已进入发布计划。请告诉我要移交给谁，例如“移交给张淼”；如果由你继续处理，请回复“我来处理”。',time:now()});c.draft='';run.publishDecision='publish';flow.mode='publish-handoff';state.messages=c.messages;vwSave();renderAssistant();return true;}
+ if(/暂不|稍后|不处理/.test(text)){c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'已暂不处理，本次成片会保留在当前对话中。',time:now()});c.draft='';run.publishDecision='later';state.messages=c.messages;vwSave();renderAssistant();return true;}
+ return false;
+}
+$('#composer').onsubmit=function(e){const c=chat();if(!c.videoWorkflow)return vwOriginalSubmit.call(this,e);e.preventDefault();const f=c.videoWorkflow;if(f.runs.some(vwBusy))return vwStopCurrent(c);const text=$('#prompt').value.trim();if(!text)return;if(vwHandleGeneratedAction(c,text))return;if(f.mode==='white-model'&&f.whiteModelFlow)return vwHandleWhiteModelReply(c,text);if(f.mode==='white-prompt'&&f.whiteConfirmed)return vwGenerateWhiteSubject(c,text);if(f.localScriptFlow){if(f.mode==='confirm-plan')return vwHandlePlanConfirmation(c,text);if(f.mode==='production-method')return vwHandleProductionMethod(c,text);if(f.mode==='stage-review')return vwHandleStageReply(c,text);if(f.mode==='choice')return vwHandleProductionChoice(c,text);return f.editing?vwLocalRefine(c,text):vwHandleNativeScriptReply(c,text);}vwSend(c,text,f.editing?'refine':'continue',f.editing||null,f.editingParent||null);};
 $('#prompt').addEventListener('input',()=>{if(chat().videoWorkflow?.runs.some(vwBusy))$('#send').disabled=false;});
 window.addEventListener('beforeunload',()=>{for(const url of VW.media.values())URL.revokeObjectURL(url);});
 
@@ -652,7 +666,7 @@ function vwHandleWhiteModelReply(c,text){
  setTimeout(()=>{run.status='completed';run.message='已根据你的修改方向完成白模视频更新。';run.whiteReport=vwDefaultWhiteReport();run.metarealm={status:'completed',provider:'元境',revision:run.whiteRevision};c.messages.push({role:'assistant',text:'白模视频已更新完成。\n\n白模视频是否需要修改？若无需修改，请回复“确认”；若需修改，请继续描述修改方向。',time:now()});state.messages=c.messages;vwSave();if(chat()===c)renderAssistant();},950);
 }
 function vwStartWhiteModel(c,source){
- const flow=c.videoWorkflow,run=vwNewRun('white-model','已将参考视频提交至元境，正在解析结构、遮挡、相机轨迹和动作时序…');Object.assign(flow,{whiteModelFlow:true,localScriptFlow:false,mode:'white-model',whiteReferences:[]});Object.assign(run,{status:'running',skillName:'元境白模 Agent',whiteModel:true,whiteStage:1,metarealm:{status:'running',provider:'元境'}});flow.runs.push(run);flow.whiteBlueprintRun=run.localId;c.messages.push({role:'user',text:'选择“视频复刻”，请保留原脚本并先通过元境生成可复用的 3D 白模运动蓝图。',time:now()});vwRunMessage(c,run);state.messages=c.messages;vwSave();renderAssistant();vwScheduleWhiteReport(c,run);
+ const flow=c.videoWorkflow,run=vwNewRun('white-model','已将参考视频提交至元境，正在解析结构、遮挡、相机轨迹和动作时序…');Object.assign(flow,{whiteModelFlow:true,localScriptFlow:false,mode:'white-model',whiteReferences:[],metarealmCanvasAt:Date.now()+4000,metarealmCanvasOpened:false});Object.assign(run,{status:'running',skillName:'元境白模 Agent',whiteModel:true,whiteStage:1,metarealm:{status:'running',provider:'元境'}});flow.runs.push(run);flow.whiteBlueprintRun=run.localId;c.messages.push({role:'user',text:'选择“视频复刻”，请保留原脚本并先通过元境生成可复用的 3D 白模运动蓝图。',time:now()});vwRunMessage(c,run);state.messages=c.messages;vwSave();renderAssistant();vwScheduleWhiteReport(c,run);vwScheduleMetarealmCanvas(c);
 }
 function vwGenerateWhiteSubject(c,text){
  const flow=c.videoWorkflow,blueprint=flow.runs.find(run=>run.localId===flow.whiteBlueprintRun);c.messages.push({role:'user',text,time:now()});c.draft='';flow.mode='white-generate';if(blueprint)blueprint.whiteStage=3;
@@ -674,14 +688,14 @@ function vwLaunchChatChoice(materials=[],userText=''){
 
 async function vwSaveGeneratedVideo(c,run){
  if(!run?.result?.video_url)return;
- if(run.assetId){run.publishDecision='saved';vwSave();toast('已保存到资产库');location.hash='assets';return;}
+ if(run.assetId){run.publishDecision='saved';c.messages.push({role:'assistant',text:'这条视频已保存到资产库，可在“资产 → AI 成片库”查看和使用。',time:now()});state.messages=c.messages;vwSave();renderAssistant();toast('保存成功');return;}
  try{
   const response=await fetch(run.result.video_url);if(!response.ok)throw Error('成片读取失败');
   const blob=await response.blob(),mediaId=`ai-video-file-${run.localId}`,assetId=`ai-video-${run.localId}`,script=c.videoWorkflow?.selectedScript;
   await inspirationMedia(mediaId,new File([blob],`AI成片-${run.localId}.mp4`,{type:blob.type||'video/mp4'}));
   workspace.generatedMedia??=[];
   workspace.generatedMedia.unshift({id:assetId,origin:'ai-generated',status:'completed',mediaType:'video',mediaId,title:`${script?.title||'视频二创'} · AI 成片`,summary:'由视频二创流程生成并保存的演示成片。',platform:'AI 生成',category:'AI 成片',duration:script?.duration||28,ratio:'竖屏 9:16',created:Date.now(),ownerId:c.ownerId||state.id,demo:true,art:'app'});
-  run.assetId=assetId;run.publishDecision='saved';vwSave();renderAssistant();toast('已保存到资产库');setTimeout(()=>{location.hash='assets';},350);
+  run.assetId=assetId;run.publishDecision='saved';c.messages.push({role:'assistant',text:'已保存到资产库，可在“资产 → AI 成片库”查看和使用。',time:now()});state.messages=c.messages;vwSave();renderAssistant();toast('保存成功');
  }catch(error){toast(error.message||'保存到资产库失败，请重试');}
 }
 function vwOpenAgentPage(){
