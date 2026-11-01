@@ -39,11 +39,7 @@ const afFeaturedIds=['normal-plan-batch-publish-builder','report-tool-selector',
 function afSkillEntry(id){return afBatchSkills.find(item=>item.id===id)||AS.skills.find(item=>item.id===id);}
 function afCustomTipCard(tip){return `<article class="af-custom-tip-card ${tip.favorite?'favorite':''}"><button type="button" class="af-custom-tip-main" data-r-action="aw-use-custom-tip" data-id="${E(tip.id)}"><span><h3>${E(tip.name)}</h3><em>${tip.favorite?'已收藏':'刚刚'}</em></span><p>${E(tip.prompt.replace(/【|】/g,'').slice(0,92))}${tip.prompt.length>92?'…':''}</p><footer>${tip.favorite?'收藏':'自定义妙招'}<span>键入输入框 ↗</span></footer></button>${awCustomTipActions(tip)}</article>`;}
 function afSceneCard(entry){const key=`skill:${entry.id}`,basePrompt=afSkillPrompts[entry.id]||`请使用「${entry.name}」帮助我完成当前任务。${entry.description}`,info=awRegisterBuiltin({key,kind:'skill',skillId:entry.id,name:entry.name,description:entry.description,prompt:basePrompt,components:[]}),favorite=awBuiltinFavorite(key);return `<article class="af-category-card ${favorite?'favorite':''}"><button type="button" class="af-category-card-main" data-r-action="af-primary-skill" data-id="${E(entry.id)}"><div><h3>${E(info.name)}</h3><span>1 个技能</span></div><p>${E(info.description)}</p><footer>${E(entry.category||entry.group)}<span>键入默认提示词 ↗</span></footer><span class="af-card-art" aria-hidden="true">${icon(afGlyphs[entry.group]||'spark')}</span></button>${awBuiltinTipActions(info)}</article>`;}
-awRenderScenes=function(){
- const scenes=$('#aw-scenes'),c=awChat(),active=!!(c.messages.length||c.reference||c.confirmationContext||c.diagnosisContext||(c.adPublishFlow&&c.adPublishFlow.stage!=='compose')||c.videoWorkflow?.runs?.length);
- assistantShell.classList.toggle('aw-conversation-active',active);
- if(active){scenes.hidden=true;scenes.innerHTML='';return;}
- scenes.hidden=false;
+function afSceneMarkup(){
  const visibleGroups=AS.groups,favorites=workspace.customTips.filter(tip=>tip.favorite),favoriteSkills=workspace.builtinTipFavorites.filter(key=>key.startsWith('skill:')).map(key=>afSkillEntry(key.slice(6))).filter(Boolean);if(AW.group==='收藏'&&!favorites.length&&!favoriteSkills.length)AW.group='自定义与辅助';
  const groupMeta=visibleGroups.find(group=>group.name===AW.group),categories=groupMeta?.categories||[];
  let entries=[];
@@ -55,11 +51,21 @@ awRenderScenes=function(){
  const customCards=(custom?entries.map(afSceneCard).join('')+tips.map(afCustomTipCard).join('')+(AW.group==='自定义与辅助'?`<button type="button" class="af-custom-tip-add" data-r-action="aw-create-custom-tip" aria-label="新建自定义妙招"><b>＋</b><small role="tooltip">自定义妙招</small></button>`:''):'');
  const tabs=[...(favorites.length||favoriteSkills.length?['收藏']:[]),'精选场景',...visibleGroups.map(group=>group.name)];
  const categoryNav=categories.length?`<nav class="af-skill-categories" aria-label="二级场景分类">${['',...categories].map(name=>awButton('aw-category',name||'全部',name,name===AW.category?'active':'')).join('')}</nav>`:'';
- scenes.innerHTML=`<nav class="aw-scene-groups" aria-label="一级场景分类">${tabs.map(name=>awButton('aw-group',(name==='收藏'?'☆ ':icon(afGlyphs[name]||'spark'))+E(name),name,name===AW.group?'active':'')).join('')}</nav>${categoryNav}<div class="af-category-grid ${custom?'af-custom-tip-grid':''}" aria-label="${AW.group==='收藏'?'收藏妙招':custom?'自定义与辅助技能':'场景技能'}">${custom?customCards:entries.map(afSceneCard).join('')}</div>`;
+ return `<nav class="aw-scene-groups" aria-label="一级场景分类">${tabs.map(name=>awButton('aw-group',(name==='收藏'?'☆ ':icon(afGlyphs[name]||'spark'))+E(name),name,name===AW.group?'active':'')).join('')}</nav>${categoryNav}<div class="af-category-grid ${custom?'af-custom-tip-grid':''}" aria-label="${AW.group==='收藏'?'收藏妙招':custom?'自定义与辅助技能':'场景技能'}">${custom?customCards:entries.map(afSceneCard).join('')}</div>`;
+}
+awRenderScenes=function(){
+ const scenes=$('#aw-scenes'),c=awChat(),active=!!(c.messages.length||c.reference||c.confirmationContext||c.diagnosisContext||(c.adPublishFlow&&c.adPublishFlow.stage!=='compose')||c.videoWorkflow?.runs?.length);
+ assistantShell.classList.toggle('aw-conversation-active',active);
+ if(active){scenes.hidden=true;scenes.innerHTML='';return;}
+ scenes.hidden=false;scenes.innerHTML=afSceneMarkup();
+};
+awRenderTips=function(){
+ const panel=$('#aw-tips-panel');panel.hidden=!AW.tipsOpen;if(!AW.tipsOpen){panel.innerHTML='';return;}
+ panel.innerHTML=`<div class="aw-tip-head"><strong>妙招</strong><span>选择后会填入输入框，你可以继续修改</span>${awButton('aw-close-tips','收起')}</div><div class="aw-tip-scenes">${afSceneMarkup()}</div>`;
 };
 AW.group='精选场景';
 R.invoke('af-primary-skill',b=>{
- const batch=afBatchSkills.find(entry=>entry.id===b.dataset.id),edit=workspace.builtinTipEdits[`skill:${b.dataset.id}`];if(batch&&!edit)return R.actions['aw-use-skill']?.({dataset:{id:batch.id}});
+ AW.tipsOpen=false;const batch=afBatchSkills.find(entry=>entry.id===b.dataset.id),edit=workspace.builtinTipEdits[`skill:${b.dataset.id}`];if(batch&&!edit)return R.actions['aw-use-skill']?.({dataset:{id:batch.id}});
  const entry=batch||AS.skills.find(item=>item.id===b.dataset.id);if(!entry)return;
  const c=awChat(),prompt=workspace.builtinTipEdits[`skill:${entry.id}`]?.prompt||afSkillPrompts[entry.id]||`请使用「${entry.name}」帮助我完成当前任务。${entry.description}`;
  const tokens=[...prompt.matchAll(/【([^】]+)】/g)].map(match=>match[1]).filter(name=>awComponentNames.has(name));
