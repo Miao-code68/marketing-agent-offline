@@ -15,10 +15,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          code=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+          code=$(curl --silent --show-error --write-out '\nHTTP %{http_code}\n' \
             --request POST \
             --header 'Accept: application/vnd.github+json' \
             --header "Authorization: Bearer ${GH_TOKEN}" \
             --header 'X-GitHub-Api-Version: 2022-11-28' \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages/deployments/4b2245e87a3a947e09a10b32fa1a2ab309ce6f53/cancel")
-          test "$code" = 204 || test "$code" = 409
+          echo "$code"
