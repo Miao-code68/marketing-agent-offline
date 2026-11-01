@@ -27,7 +27,7 @@
     const agentPage = document.querySelector('#wb-agent-page');
     const agentMain = document.querySelector('#assistant-drawer .aw-main');
     if (agentPage && agentMain && agentPage.parentElement !== agentMain) agentMain.append(agentPage);
-    const collaborationTaskCount = workspace.projects.reduce((total, project) => total + (project.chats || []).reduce((chatTotal, chat) => chatTotal + (chat.collaboration?.tasks?.length || 0), 0), 0) || 3;
+    const collaborationTaskCount = typeof wbCollabInboxTasks === 'function' ? wbCollabInboxTasks().length : Math.max(5, workspace.projects.reduce((total, project) => total + (project.chats || []).reduce((chatTotal, chat) => chatTotal + (chat.collaboration?.tasks?.length || 0), 0), 0));
 
     const newChat = document.querySelector('#assistant-new');
     if (newChat && !sidebarTop.querySelector('.ad-agent-menu-item')) {
