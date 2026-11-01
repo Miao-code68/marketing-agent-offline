@@ -127,7 +127,7 @@ html.ad-agent-only #aw-sidebar-top > button,
 html.ad-agent-only #aw-sidebar-top #assistant-new,
 html.ad-agent-only #aw-sidebar-top .ad-agent-menu-item {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
+  grid-template-columns: 18px minmax(0, 1fr) auto;
   align-items: center;
   width: 100%;
   min-height: 36px;
@@ -142,6 +142,19 @@ html.ad-agent-only #aw-sidebar-top .ad-agent-menu-item {
   line-height: 20px;
   font-weight: 400;
   text-align: left;
+}
+
+html.ad-agent-only #aw-sidebar-top .ad-agent-menu-item > em {
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 9px;
+  background: #ff4f59;
+  color: #fff;
+  font-size: 9px;
+  font-style: normal;
+  line-height: 1;
 }
 
 html.ad-agent-only #aw-sidebar-top #assistant-new {

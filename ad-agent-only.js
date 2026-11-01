@@ -27,12 +27,14 @@
     const agentPage = document.querySelector('#wb-agent-page');
     const agentMain = document.querySelector('#assistant-drawer .aw-main');
     if (agentPage && agentMain && agentPage.parentElement !== agentMain) agentMain.append(agentPage);
+    const collaborationTaskCount = workspace.projects.reduce((total, project) => total + (project.chats || []).reduce((chatTotal, chat) => chatTotal + (chat.collaboration?.tasks?.length || 0), 0), 0) || 3;
 
     const newChat = document.querySelector('#assistant-new');
     if (newChat && !sidebarTop.querySelector('.ad-agent-menu-item')) {
       newChat.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>新建对话</span>';
       sidebarTop.replaceChildren(newChat);
       sidebarTop.insertAdjacentHTML('beforeend', `
+        <button type="button" class="ad-agent-menu-item" data-r-action="wb-my-tasks">${icon('plan')}<span>我的任务</span><em class="ad-agent-task-badge">${collaborationTaskCount}</em></button>
         <button type="button" class="ad-agent-menu-item" data-r-action="wb-automation">${icon('lightning')}<span>自动化</span></button>
         <button type="button" class="ad-agent-menu-item" data-r-action="af-config">${icon('book')}<span>知识库管理</span></button>
         <button type="button" class="ad-agent-menu-item" data-r-action="af-skills">${icon('wrench')}<span>技能管理</span></button>
@@ -41,9 +43,12 @@
         <button type="button" class="ad-agent-menu-item" data-r-action="wb-apps"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="2.25"/><circle cx="16" cy="8" r="2.25"/><circle cx="8" cy="16" r="2.25"/><rect x="13.75" y="13.75" width="4.5" height="4.5" rx="1"/></svg><span>应用</span></button>
       `);
     }
+    const taskBadge = sidebarTop.querySelector('.ad-agent-task-badge');
+    if (taskBadge) taskBadge.textContent = String(collaborationTaskCount);
 
     const selectedSection = typeof WB !== 'undefined' ? WB.agentSection : 'chat';
     const sectionByAction = {
+      'wb-my-tasks': 'collab-tasks',
       'wb-automation': 'automation',
       'af-config': 'knowledge',
       'af-skills': 'skills',
