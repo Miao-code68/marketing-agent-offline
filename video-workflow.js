@@ -1,6 +1,6 @@
 'use strict';
 // Real skill jobs stay attached to the originating conversation, even after navigation.
-const VW={polling:new Set(),opening:new Set(),media:new Map(),whiteTimers:new Set()};
+const VW={polling:new Set(),opening:new Set(),media:new Map(),whiteTimers:new Set(),canvasAutoOpened:new Set()};
 workspace.videoAnalyses??={};
 const vwBusy=r=>['preparing','queued','running'].includes(r?.status);
 const vwIdleSendHTML=$('#send').innerHTML;
@@ -247,6 +247,11 @@ const vwWhitePrompt=`【参考素材：已确认的白模视频，作为唯一�
 
 主体细节：【补充材质、颜色、风格、细节】
 
+【素材引用（可选）】
+视频素材 ID：【填写视频素材 ID；没有可留空】
+图片素材 ID：【填写图片素材 ID；多个 ID 用逗号分隔】
+也可以点击下方“本地上传”，直接添加视频或图片。
+
 【渲染与光影】
 写实渲染，自然柔和环境光，真实材质反射，干净背景【自定义背景，如纯白背景/室内客厅地面】，光影跟随镜头自然变化，主体光影和镜头视角匹配。
 
@@ -266,6 +271,9 @@ function vwRemakeEntryHTML(flow,message){
 function vwWhiteReferenceBlock(flow){
  const references=flow?.whiteReferences||[];if(!references.length)return '';
  return `\n\n【引用组件】\n${references.map(item=>`- ${item.typeLabel}：${item.title}（ID：${item.id}）`).join('\n')}`;
+}
+function vwWhitePromptReferences(text=''){
+ const rows=[];for(const [label,type,typeLabel] of [['视频素材 ID','video','视频'],['图片素材 ID','image','图片']]){const match=text.match(new RegExp(`${label}：?【?([^】\\n]+)`));if(!match||/填写|没有可留空/.test(match[1]))continue;for(const value of match[1].split(/[，,；;、\s]+/).map(item=>item.trim()).filter(Boolean))rows.push({id:value,title:value,type,typeLabel});}return rows;
 }
 function vwWhitePromptBase(text=''){return text.split('\n\n【引用组件】\n')[0];}
 function vwWhiteReferenceBar(flow){
@@ -300,7 +308,7 @@ function vwWhiteOriginal(source){
 }
 function vwWhiteRunHTML(run,c){
  const busy=vwBusy(run),confirmed=run.whiteConfirmed;
- return `<div class="vw-response vw-white-flow vw-native-flow"><div class="vw-agent-label">${icon('spark')} 元境白模 Agent</div><p class="vw-status ${busy?'vw-progress':''}" role="status">${busy?'<i></i>':''}${E(run.message||'')}</p>${run.whiteReport?'<button type="button" class="vw-open-metarealm" data-r-action="vw-open-canvas">打开元境画布 →</button>':''}${run.whiteReport&&!confirmed?'<p>白模视频是否需要修改？</p><p>若无需修改，请回复“确认”；若需修改，请直接描述修改方向。</p>':''}</div>`;
+ return `<div class="vw-response vw-white-flow vw-native-flow"><div class="vw-agent-label">${icon('spark')} 元境白模 Agent</div><p class="vw-status ${busy?'vw-progress':''}" role="status">${busy?'<i></i>':''}${E(run.message||'')}</p>${run.whiteReport&&!confirmed?'<p>白模视频是否需要修改？</p><p>若无需修改，请回复“确认”；若需修改，请直接描述修改方向。</p>':''}</div>`;
 }
 function vwPublishChoice(run){
  const decision=run.publishDecision;
@@ -367,9 +375,9 @@ renderAssistant=function(){
  assistantShell.classList.toggle('vw-conversation',!!flow&&assistantTab==='chat'&&!AW.folder&&WB.agentSection==='chat');
  const send=$('#send');send.classList.remove('vw-stop');send.innerHTML=vwIdleSendHTML;send.setAttribute('aria-label','发送');
  if(!flow||assistantTab!=='chat'||AW.folder||WB.agentSection!=='chat')return;
- $('#aw-context-chips').insertAdjacentHTML('afterbegin',`<span class="vw-selected-skill">${icon('spark')}${flow.whiteModelFlow?'白模蓝图 Skill':flow.localScriptFlow&&flow.mode==='remake'?'脚本拆解 Skill':flow.mode==='generate'?'视频生成':'制作同款'}</span><span>▧ ${E(flow.reference.title)}</span>`);
+ if(!flow.whiteModelFlow)$('#aw-context-chips').insertAdjacentHTML('afterbegin',`<span class="vw-selected-skill">${icon('spark')}${flow.localScriptFlow&&flow.mode==='remake'?'脚本拆解 Skill':flow.mode==='generate'?'视频生成':'制作同款'}</span><span>▧ ${E(flow.reference.title)}</span>`);
  $('#prompt').placeholder=flow.editing?'描述你想修改的内容，例如：开头更简洁，保留第二段的场景…':'补充产品信息、调整脚本，或继续视频制作…';
- if(flow.mode==='white-prompt'&&flow.whiteConfirmed){const prompt=$('#prompt'),spaced=vwWhiteReferenceSpacing(prompt.value);if(spaced!==prompt.value){prompt.value=c.draft=spaced;flow.whitePromptBase=vwWhiteReferenceSpacing(flow.whitePromptBase||vwWhitePromptBase(spaced));vwSave();}$('#composer').classList.add('vw-white-reference-active');prompt.insertAdjacentHTML('afterend',vwWhiteReferenceBar(flow));prompt.onscroll=()=>vwAlignWhitePrompt(false);prompt.oninput=()=>requestAnimationFrame(()=>vwAlignWhitePrompt(false));vwAlignWhitePrompt(false);requestAnimationFrame(()=>vwAlignWhitePrompt(true));}
+ if(flow.mode==='white-prompt'&&flow.whiteConfirmed){const prompt=$('#prompt'),spaced=vwWhiteReferenceSpacing(prompt.value);if(spaced!==prompt.value){prompt.value=c.draft=spaced;flow.whitePromptBase=vwWhiteReferenceSpacing(flow.whitePromptBase||vwWhitePromptBase(spaced));vwSave();}}
  $('#assistant-body').querySelectorAll('.message').forEach((el,i)=>{
   const m=c.messages[i];if(!m)return;
   if(flow)el.querySelector('[data-chat-brief]')?.remove();
@@ -381,8 +389,9 @@ renderAssistant=function(){
   if(m.videoReadonlyResult){el.classList.add('vw-rich-message');el.innerHTML=vwReadonlyResultHTML();}
   if(m.videoStageReview){el.classList.add('vw-rich-message');el.innerHTML=vwStageReviewHTML(m);}
   if(m.videoSampleReview){el.classList.add('vw-rich-message');el.innerHTML=vwSampleReviewHTML();}
-  if(m.videoAutomaticResult){el.classList.add('vw-rich-message');el.innerHTML=vwAutomaticResultHTML();}
+ if(m.videoAutomaticResult){el.classList.add('vw-rich-message');el.innerHTML=vwAutomaticResultHTML();}
  });
+ const whiteRun=flow.runs.find(run=>run.whiteModel&&run.whiteReport);if(whiteRun&&!VW.canvasAutoOpened.has(c.id)){VW.canvasAutoOpened.add(c.id);requestAnimationFrame(()=>{if(chat()===c&&!vwCanvasDrawer.open)vwOpenMetarealmCanvas();});}
  const composer=$('#composer'),composerArea=composer?.closest('.composer-area');composerArea?.querySelector('#vw-native-question-panel')?.remove();composerArea?.classList.remove('vw-native-question-active');
  const nativeQuestion=vwNativeQuestionPanel(flow);if(nativeQuestion&&composer){composer.insertAdjacentHTML('beforebegin',nativeQuestion);composerArea?.classList.add('vw-native-question-active');const input=$('#vw-native-question-input'),sendQuestion=()=>R.actions['vw-native-question-send']?.();input?.addEventListener('input',()=>{$('#vw-native-question-panel [data-r-action="vw-native-question-send"]').disabled=!input.value.trim();});input?.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendQuestion();}});}
  $('#assistant-body').querySelectorAll('.vw-questions').forEach(form=>form.onsubmit=e=>{e.preventDefault();const run=flow.runs.find(r=>r.localId===form.dataset.run);if(!run||flow.runs.some(vwBusy))return;const values=new FormData(form),answer=run.result.questions.map((q,i)=>`${q.title}：${values.get('q'+i)}`).join('\n');run.answered=answer;vwSave();vwSend(c,answer,'continue',null,run.id);});
@@ -647,7 +656,8 @@ function vwStartWhiteModel(c,source){
 }
 function vwGenerateWhiteSubject(c,text){
  const flow=c.videoWorkflow,blueprint=flow.runs.find(run=>run.localId===flow.whiteBlueprintRun);c.messages.push({role:'user',text,time:now()});c.draft='';flow.mode='white-generate';if(blueprint)blueprint.whiteStage=3;
- const run=vwNewRun('generate-white-subject','正在读取已确认的白模蓝图…');Object.assign(run,{skillName:'白模换主体 Agent',whiteReplacement:true,requestText:text,references:JSON.parse(JSON.stringify(flow.whiteReferences||[])),demoRunningMessage:'正在严格继承白模的镜头、结构、遮挡和动作规则，结合引用内容渲染新主体…',demoCompleteMessage:'新主体视频已经生成。白模运动蓝图已保留，可以继续复用。'});flow.runs.push(run);vwRunMessage(c,run);state.messages=c.messages;vwSave();renderAssistant();vwCreateDemoVideo(c,run);
+ const promptReferences=vwWhitePromptReferences(text),uploaded=(c.attachments||[]).filter(item=>/^image\//.test(item.type||'')||/^video\//.test(item.type||'')).map(item=>({id:item.id,title:item.name,type:(item.type||'').startsWith('image/')?'image':'video',typeLabel:(item.type||'').startsWith('image/')?'图片':'视频'})),references=[...(flow.whiteReferences||[]),...promptReferences,...uploaded].filter((item,index,rows)=>rows.findIndex(row=>row.id===item.id)===index);
+ const run=vwNewRun('generate-white-subject','正在读取已确认的白模蓝图…');Object.assign(run,{skillName:'白模换主体 Agent',whiteReplacement:true,requestText:text,references:JSON.parse(JSON.stringify(references)),demoRunningMessage:'正在严格继承白模的镜头、结构、遮挡和动作规则，结合引用内容渲染新主体…',demoCompleteMessage:'新主体视频已经生成。白模运动蓝图已保留，可以继续复用。'});flow.runs.push(run);vwRunMessage(c,run);state.messages=c.messages;vwSave();renderAssistant();vwCreateDemoVideo(c,run);
 }
 function vwPrepareChatMaterials(){
  const flow=chat().videoWorkflow,source=inspirationFind(flow?.reference?.id);if(!flow?.selectedScript||!source)return;
@@ -721,7 +731,6 @@ R.invoke('vw-open-sample',()=>vwOpenSampleDrawer());
 R.invoke('vw-open-final-video',()=>vwOpenSampleDrawer(true));
 R.invoke('vw-close-sample',()=>vwSampleDrawer.close());
 R.invoke('vw-close-canvas',()=>vwCanvasDrawer.close());
-R.invoke('vw-open-canvas',()=>vwOpenMetarealmCanvas());
 R.invoke('vw-stage-confirm',()=>vwConfirmStage(chat()));
 R.invoke('vw-stage-adjust',()=>vwHandleStageReply(chat(),'调整后重做'));
 R.invoke('vw-material-close',()=>vwMaterialDrawer.close());

@@ -531,7 +531,6 @@ html.ad-agent-only .ad-agent-expert-projects{margin-left:39px;padding-left:8px}
 html.ad-agent-only .ad-agent-expert-projects>.ad-agent-expert-project{display:block;margin:2px 0}
 html.ad-agent-only .ad-agent-expert-project-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 23px 23px;align-items:center;border-radius:7px}
 html.ad-agent-only .ad-agent-expert-chat-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 23px 23px;align-items:center;border-radius:7px}
-html.ad-agent-only .ad-agent-expert-chat-row{grid-template-columns:minmax(0,1fr) 23px}
 html.ad-agent-only .ad-agent-expert-project-main,html.ad-agent-only .ad-agent-expert-chat-main{display:flex!important;width:100%;min-width:0;align-items:center;gap:6px;padding:6px!important;border:0!important;border-radius:7px!important;background:transparent!important;color:#6f7d8f!important;text-align:left}
 html.ad-agent-only .ad-agent-expert-project-main span,html.ad-agent-only .ad-agent-expert-chat-main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html.ad-agent-only .ad-agent-expert-project-main svg{width:13px;height:13px;flex:none}
