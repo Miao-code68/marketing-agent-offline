@@ -147,7 +147,7 @@ R.invoke('wb-assets',()=>wbAgentOpen('assets'));
 R.invoke('wb-apps',()=>wbAgentOpen('apps'));
 R.invoke('af-new',()=>{WB.agentSection='chat';awNewChat(state.id);});
 const wbSelectChat=R.actions['aw-select-chat'];R.invoke('aw-select-chat',b=>{WB.agentSection='chat';wbSelectChat(b);});
-const wbNewChat=awNewChat;awNewChat=function(id){WB.agentSection='chat';wbNewChat(id);const expert=wbFindExpert(workspace.lastSelectedExpertId)||wbMostRecentExpert()||wbFindExpert('core-default');if(expert){wbApplyConversationExpert(awChat(),expert,false);awChat().skillIds=[];persist();renderAssistant();}};
+const wbNewChat=awNewChat;awNewChat=function(id){WB.agentSection='chat';WB.collabPanelOpen=false;wbNewChat(id);const expert=wbFindExpert(workspace.lastSelectedExpertId)||wbMostRecentExpert()||wbFindExpert('core-default');if(expert){wbApplyConversationExpert(awChat(),expert,false);awChat().skillIds=[];persist();renderAssistant();}};
 const wbOpenAssistant=openAssistant;openAssistant=function(ref){WB.agentSection='chat';wbOpenAssistant(ref);};
 function wbPageHead(title,description=''){return `<header class="wb-agent-page-head"><h1>${title}</h1>${description?`<p>${description}</p>`:''}</header>`;}
 function wbAgentEmpty(title){return `<div class="wb-agent-empty">${icon('folder')}<span>${title}</span></div>`;}
