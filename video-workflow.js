@@ -452,6 +452,9 @@ function vwNaturalScriptIndex(text,count){
 function vwAskScriptDirection(c,text){
  c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'我还不能确定你指的是哪一版。请直接回复“选用第 1 版”，或“修改第 2 版，让开头更直接”；也可以回复“重新生成 3 个版本”。',time:now()});c.draft='';state.messages=c.messages;vwSave();renderAssistant();
 }
+function vwWantsRegeneration(text=''){
+ return /重新(?:生成|生产)|再(?:生成|生产)|换一批|换一组|重新来|再来(?:三|3)个方向|都不合适/.test(text);
+}
 function vwSelectScriptNaturally(c,text,index){
  const flow=c.videoWorkflow,set=vwLatestScriptSet(flow);if(!set||index===null||!set.scripts[index])return vwAskScriptDirection(c,text);const script=JSON.parse(JSON.stringify(set.scripts[index]));delete script.versions;flow.selection=set.run.localId+':'+index+':'+(script.revision||1);flow.selectedScript=script;flow.mode='confirm-plan';delete flow.nativeQuestionDismissed;c.messages=c.messages.filter(message=>!message.videoChoice);c.messages.push({role:'user',text,time:now(),scriptSelection:true},{role:'assistant',text:'脚本已定稿。请直接回复“确认继续”进入下一步；如需调整，请说明要修改的开头、场景、搭子回应、台词或结尾，也可以回复“重新生成 3 个方向”。',time:now(),videoPlanConfirmation:true});c.draft='';state.messages=c.messages;delete flow.editing;delete flow.editingKey;vwSave();renderAssistant();setTimeout(()=>$('#vw-native-question-panel')?.scrollIntoView({behavior:'smooth',block:'center'}),0);
 }
@@ -467,7 +470,7 @@ function vwCompleteBriefRevision(c,text,pending){
  c.messages.push({role:'user',text,time:now()});c.draft='';delete flow.awaitingBriefRevision;flow.selection=null;flow.selectedScript=revised;flow.mode='confirm-plan';delete flow.nativeQuestionDismissed;const run=vwNewRun('refine','已根据你的要求完成方向一的创意修订。');Object.assign(run,{status:'completed',skillName:'脚本改写 Agent',briefRevision:true,result:{summary:'',segments:[],scripts:[revised],questions:[],project_url:'',video_url:'',task_ids:[]}});flow.runs.push(run);vwRunMessage(c,run);c.messages.push({role:'assistant',text:'新版脚本已定稿。请直接回复“确认继续”进入下一步；如仍需调整，请直接说明修改要求。',time:now(),videoPlanConfirmation:true});state.messages=c.messages;vwSave();renderAssistant();setTimeout(()=>$('#vw-native-question-panel')?.scrollIntoView({behavior:'smooth',block:'center'}),0);
 }
 function vwHandleNativeScriptReply(c,text){
- const flow=c.videoWorkflow;if(flow.awaitingBriefRevision)return vwCompleteBriefRevision(c,text,flow.awaitingBriefRevision);const set=vwLatestScriptSet(flow);if(!set)return vwAskScriptDirection(c,text);if(/重新生成|再生成|换一批|换一组|都不合适/.test(text))return vwRegenerateScripts(c,text);const index=vwNaturalScriptIndex(text,set.scripts.length);if(/修改|改一下|改成|优化|调整/.test(text)){if(index===null)return vwAskScriptDirection(c,text);const specific=text.length>22&&/(开头|钩子|场景|废土|悬念|台词|笑点|回应|结尾|风格|希望|更加)/.test(text)&&!/(可以|能否|能不能).{0,12}(修改|调整).{0,3}[吗？?]?$/.test(text);return specific?vwCompleteBriefRevision(c,text,{runId:set.run.localId,index}):vwAskBriefRevision(c,text,set,index);}if(index!==null&&(/选|倾向|喜欢|采用|就用|要第|^[\s123一二三]+$/.test(text)))return vwSelectScriptNaturally(c,text,index);return vwAskScriptDirection(c,text);
+ const flow=c.videoWorkflow;if(flow.awaitingBriefRevision)return vwCompleteBriefRevision(c,text,flow.awaitingBriefRevision);const set=vwLatestScriptSet(flow);if(!set)return vwAskScriptDirection(c,text);if(vwWantsRegeneration(text))return vwRegenerateScripts(c,text);const index=vwNaturalScriptIndex(text,set.scripts.length);if(/修改|改一下|改成|优化|调整/.test(text)){if(index===null)return vwAskScriptDirection(c,text);const specific=text.length>22&&/(开头|钩子|场景|废土|悬念|台词|笑点|回应|结尾|风格|希望|更加)/.test(text)&&!/(可以|能否|能不能).{0,12}(修改|调整).{0,3}[吗？?]?$/.test(text);return specific?vwCompleteBriefRevision(c,text,{runId:set.run.localId,index}):vwAskBriefRevision(c,text,set,index);}if(index!==null&&(/选|倾向|喜欢|采用|就用|要第|^[\s123一二三]+$/.test(text)))return vwSelectScriptNaturally(c,text,index);return vwAskScriptDirection(c,text);
 }
 function vwHandleProductionChoice(c,text){
  const flow=c.videoWorkflow,choiceMessage=[...c.messages].reverse().find(message=>message.videoChoice);if(/混剪|选择素材|素材重新/.test(text)){c.messages.push({role:'user',text,time:now()});c.draft='';if(choiceMessage)choiceMessage.choice='mix';state.messages=c.messages;vwSave();renderAssistant();return vwPrepareChatMaterials();}if(/快速|直接|演示视频|生成视频|开始制作/.test(text)){c.draft='';return vwLaunchChatChoice([],text);}c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'请直接回复“选择素材混剪”或“快速生成演示视频”。',time:now()});c.draft='';state.messages=c.messages;vwSave();renderAssistant();
@@ -476,12 +479,12 @@ function vwLatestMessage(c,key){return [...c.messages].reverse().find(message=>m
 function vwShowProductionMethod(c,userText='确认，按当前方案继续'){const flow=c.videoWorkflow,confirm=vwLatestMessage(c,'videoPlanConfirmation');if(confirm)confirm.decision='confirmed';c.messages.push({role:'user',text:userText,time:now()},{role:'assistant',text:'当前方案已确认。请选择一种推进方式并直接回复：“全自动制作直到交付终片（推荐）”、“按阶段验收制作”或“仅做只读评估，不执行生成”。制作涉及生成费用及可能的素材检测费用，执行前会先预估。',time:now(),videoProductionMethod:true});c.draft='';flow.mode='production-method';delete flow.nativeQuestionDismissed;state.messages=c.messages;vwSave();renderAssistant();}
 function vwReturnToRevision(c,text='继续调整方向'){
  const flow=c.videoWorkflow,confirm=vwLatestMessage(c,'videoPlanConfirmation'),script=flow.selectedScript||vwLatestScriptSet(flow)?.scripts?.[0];if(confirm)confirm.decision='adjust';
- if(/重新生成|换一批|换一组/.test(text))return vwRegenerateScripts(c,text);
+ if(vwWantsRegeneration(text))return vwRegenerateScripts(c,text);
  const hasDetail=text.length>8&&/(开头|钩子|场景|废土|悬念|台词|笑点|回应|结尾|风格|节奏|画面|人物)/.test(text);
  if(hasDetail&&script){flow.editing=JSON.parse(JSON.stringify(script));flow.mode='remake';return vwLocalRefine(c,text);}
  c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'可以。请直接说想调整哪里，例如“开头更有反转”“游戏场景更废土”“搭子的回应更幽默”，我会重新生成完整脚本和 Brief。',time:now()});c.draft='';flow.editing=script?JSON.parse(JSON.stringify(script)):null;flow.mode='remake';state.messages=c.messages;vwSave();renderAssistant();
 }
-function vwHandlePlanConfirmation(c,text){if(/重新生成|换一批|换一组/.test(text))return vwReturnToRevision(c,text);if(/调整|修改|再改|不满意|重做/.test(text))return vwReturnToRevision(c,text);if(/确认|没问题|可以|继续|就这样|按这个|通过|定稿/.test(text))return vwShowProductionMethod(c,text);c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'请回复“确认继续”，或直接说明还想调整的内容。',time:now()});c.draft='';state.messages=c.messages;vwSave();renderAssistant();}
+function vwHandlePlanConfirmation(c,text){if(vwWantsRegeneration(text))return vwRegenerateScripts(c,text);if(/调整|修改|再改|不满意|重做/.test(text))return vwReturnToRevision(c,text);if(/确认|没问题|可以|继续|就这样|按这个|通过|定稿/.test(text))return vwShowProductionMethod(c,text);c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'请回复“确认继续”，或直接说明还想调整的内容。',time:now()});c.draft='';state.messages=c.messages;vwSave();renderAssistant();}
 function vwMarkProductionMethod(c,method){const message=vwLatestMessage(c,'videoProductionMethod');if(message)message.productionMethod=method;c.videoWorkflow.productionMethod=method;}
 function vwLaunchReadonly(c,text='仅做只读评估，不执行生成'){
  vwMarkProductionMethod(c,'readonly');c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'',time:now(),videoReadonlyResult:true});c.draft='';c.videoWorkflow.mode='read-only-complete';state.messages=c.messages;vwSave();renderAssistant();setTimeout(()=>$('#assistant-body .vw-readonly-result:last-child')?.scrollIntoView({behavior:'smooth',block:'center'}),0);
@@ -702,7 +705,7 @@ R.invoke('vw-choice-mix',()=>vwPrepareChatMaterials());
 R.invoke('vw-choice-direct',()=>vwLaunchChatChoice());
 R.invoke('vw-plan-confirm',()=>vwShowProductionMethod(chat()));
 R.invoke('vw-plan-adjust',()=>vwReturnToRevision(chat()));
-R.invoke('vw-plan-regenerate',()=>vwReturnToRevision(chat(),'重新生成 3 个方向'));
+R.invoke('vw-plan-regenerate',()=>vwRegenerateScripts(chat(),'重新生成 3 个方向'));
 R.invoke('vw-production-auto',()=>vwLaunchAutomatic(chat()));
 R.invoke('vw-production-staged',()=>vwLaunchStaged(chat()));
 R.invoke('vw-production-readonly',()=>vwLaunchReadonly(chat()));
