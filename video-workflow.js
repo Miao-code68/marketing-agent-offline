@@ -300,7 +300,7 @@ function vwWhiteOriginal(source){
 }
 function vwWhiteRunHTML(run,c){
  const busy=vwBusy(run),confirmed=run.whiteConfirmed;
- return `<div class="vw-response vw-white-flow vw-native-flow"><div class="vw-agent-label">${icon('spark')} 元境白模 Agent</div><p class="vw-status ${busy?'vw-progress':''}" role="status">${busy?'<i></i>':''}${E(run.message||'')}</p>${run.whiteReport&&!confirmed?'<p>白模视频是否需要修改？</p><p>若无需修改，请回复“确认”；若需修改，请直接描述修改方向。</p>':''}</div>`;
+ return `<div class="vw-response vw-white-flow vw-native-flow"><div class="vw-agent-label">${icon('spark')} 元境白模 Agent</div><p class="vw-status ${busy?'vw-progress':''}" role="status">${busy?'<i></i>':''}${E(run.message||'')}</p>${run.whiteReport?'<button type="button" class="vw-open-metarealm" data-r-action="vw-open-canvas">打开元境画布 →</button>':''}${run.whiteReport&&!confirmed?'<p>白模视频是否需要修改？</p><p>若无需修改，请回复“确认”；若需修改，请直接描述修改方向。</p>':''}</div>`;
 }
 function vwPublishChoice(run){
  const decision=run.publishDecision;
@@ -521,7 +521,7 @@ function vwOpenProductionDrawer(type){const evaluation=type==='evaluation',accep
 function vwOpenSampleDrawer(finalVideo=false){vwSampleDrawer.innerHTML=`<div class="vw-sample-drawer-shell"><header><div><small>${finalVideo?'FINAL VIDEO':'SAMPLE PREVIEW'}</small><b>《这单外卖，拒绝配送》${finalVideo?'新版本视频':'样片'}</b></div><button type="button" data-r-action="vw-close-sample" aria-label="关闭视频">×</button></header><main><video controls playsinline preload="metadata" src="./demo-wasteland-sample.mp4" aria-label="这单外卖，拒绝配送${finalVideo?'新版本视频':'样片'}"></video><p>29.06 秒 · 9:16 · ${finalVideo?'全自动制作完成':'样片验收中'}</p></main></div>`;if(!vwSampleDrawer.open)vwSampleDrawer.show();}
 function vwOpenMetarealmCanvas(){
  vwCanvasDrawer.innerHTML=`<div class="vw-canvas-shell"><header><div class="vw-canvas-brand"><i></i><span><b>TT语音｜这单外卖，拒绝配送</b><small>元境制作画布 · 阶段验收</small></span></div><div><span>⚡ 957.83</span><button type="button" data-r-action="vw-close-canvas" aria-label="关闭元境画布">×</button></div></header><main><div class="vw-canvas-node script"><small>原始信息流脚本</small><p>黄沙掠过废弃公路，小林掀开锈铁箱触发警报。新搭子没有离开，而是把另一只铁桶踢到他身边：“上车！这单拒绝配送。”</p></div><div class="vw-canvas-node manifest"><small>制作清单（机器可读）</small><code>{ "aspect_ratio": "9:16", "duration": 29, "references": 4, "video_nodes": 1 }</code></div><div class="vw-canvas-node person one"><small>小林 · 人物身份板</small><div><i></i><i></i><i></i></div></div><div class="vw-canvas-node person two"><small>搭子 · 人物身份板</small><div><i></i><i></i><i></i></div></div><div class="vw-canvas-node chat"><small>剧情聊天卡</small><b>组队前</b><span>我有点菜，能一起玩吗？</span><span>来，一起玩</span></div><div class="vw-canvas-node brand"><small>品牌收尾卡</small><b>翻车有人接梗</b><strong>TT语音</strong><span>找游戏搭子</span></div><div class="vw-canvas-node video"><small>29 秒视频节点</small><b>等待参考图验收</b><span>Seedance 2.5 · 9:16 · 480p</span></div><svg class="vw-canvas-lines" viewBox="0 0 1000 760" preserveAspectRatio="none" aria-hidden="true"><path d="M300 190 C430 190 410 150 560 150 M300 210 C430 240 410 305 560 305 M300 230 C430 300 410 455 560 455 M720 165 C805 170 790 385 870 385 M720 320 C805 320 790 405 870 405 M720 470 C805 470 790 425 870 425 M720 620 C800 590 800 445 870 445"/></svg></main><footer><span>自由模式</span><b>✦ 影片创作</b><small>参考图阶段</small></footer></div>`;
- if(!vwCanvasDrawer.open)vwCanvasDrawer.show();
+ if(!vwCanvasDrawer.open)vwCanvasDrawer.showModal();
 }
 const VRS={source:null,segment:null,scripts:[],selected:null,round:1,materials:new Set(),uploads:[]};
 const VWL={tab:'video',draft:new Map()};
@@ -721,6 +721,7 @@ R.invoke('vw-open-sample',()=>vwOpenSampleDrawer());
 R.invoke('vw-open-final-video',()=>vwOpenSampleDrawer(true));
 R.invoke('vw-close-sample',()=>vwSampleDrawer.close());
 R.invoke('vw-close-canvas',()=>vwCanvasDrawer.close());
+R.invoke('vw-open-canvas',()=>vwOpenMetarealmCanvas());
 R.invoke('vw-stage-confirm',()=>vwConfirmStage(chat()));
 R.invoke('vw-stage-adjust',()=>vwHandleStageReply(chat(),'调整后重做'));
 R.invoke('vw-material-close',()=>vwMaterialDrawer.close());
