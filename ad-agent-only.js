@@ -34,7 +34,6 @@
       newChat.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>新建对话</span>';
       sidebarTop.replaceChildren(newChat);
       sidebarTop.insertAdjacentHTML('beforeend', `
-        <button type="button" class="ad-agent-menu-item" data-r-action="wb-my-tasks">${icon('plan')}<span>我的任务</span><em class="ad-agent-task-badge">${collaborationTaskCount}</em></button>
         <button type="button" class="ad-agent-menu-item" data-r-action="wb-automation">${icon('lightning')}<span>自动化</span></button>
         <button type="button" class="ad-agent-menu-item" data-r-action="af-config">${icon('book')}<span>知识库管理</span></button>
         <button type="button" class="ad-agent-menu-item" data-r-action="af-skills">${icon('wrench')}<span>技能管理</span></button>
@@ -43,12 +42,11 @@
         <button type="button" class="ad-agent-menu-item" data-r-action="wb-apps"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="2.25"/><circle cx="16" cy="8" r="2.25"/><circle cx="8" cy="16" r="2.25"/><rect x="13.75" y="13.75" width="4.5" height="4.5" rx="1"/></svg><span>应用</span></button>
       `);
     }
-    const taskBadge = sidebarTop.querySelector('.ad-agent-task-badge');
+    const taskBadge = projects.querySelector('.ad-agent-my-tasks em');
     if (taskBadge) taskBadge.textContent = String(collaborationTaskCount);
 
     const selectedSection = typeof WB !== 'undefined' ? WB.agentSection : 'chat';
     const sectionByAction = {
-      'wb-my-tasks': 'collab-tasks',
       'wb-automation': 'automation',
       'af-config': 'knowledge',
       'af-skills': 'skills',
@@ -83,6 +81,7 @@
         <div class="ad-agent-side-label">自动化任务</div>
         ${taskRows}
       </section>
+      <button type="button" class="ad-agent-my-tasks ${selectedSection==='collab-tasks'?'active':''}" data-r-action="wb-my-tasks">${icon('plan')}<span><b>我的任务</b><small>查看指派与协作进度</small></span><em>${collaborationTaskCount}</em></button>
       <section class="ad-agent-side-section ad-agent-expert-section">
         <div class="ad-agent-side-label"><span>专家</span><button type="button" data-r-action="wb-new-expert" aria-label="新建专家">＋</button></div>
         ${expertRows}
