@@ -41,17 +41,16 @@ function afCustomTipCard(tip){return `<article class="af-custom-tip-card ${tip.f
 function afSceneCard(entry){const key=`skill:${entry.id}`,basePrompt=afSkillPrompts[entry.id]||`请使用「${entry.name}」帮助我完成当前任务。${entry.description}`,info=awRegisterBuiltin({key,kind:'skill',skillId:entry.id,name:entry.name,description:entry.description,prompt:basePrompt,components:[]}),favorite=awBuiltinFavorite(key);return `<article class="af-category-card ${favorite?'favorite':''}"><button type="button" class="af-category-card-main" data-r-action="af-primary-skill" data-id="${E(entry.id)}"><div><h3>${E(info.name)}</h3><span>1 个技能</span></div><p>${E(info.description)}</p><footer>${E(entry.category||entry.group)}<span>键入默认提示词 ↗</span></footer><span class="af-card-art" aria-hidden="true">${icon(afGlyphs[entry.group]||'spark')}</span></button>${awBuiltinTipActions(info)}</article>`;}
 function afSceneMarkup(){
  const visibleGroups=AS.groups,favorites=workspace.customTips.filter(tip=>tip.favorite),favoriteSkills=workspace.builtinTipFavorites.filter(key=>key.startsWith('skill:')).map(key=>afSkillEntry(key.slice(6))).filter(Boolean);if(AW.group==='收藏'&&!favorites.length&&!favoriteSkills.length)AW.group='自定义与辅助';
- const groupMeta=visibleGroups.find(group=>group.name===AW.group),categories=groupMeta?.categories||[];
+ AW.category='';
  let entries=[];
  if(AW.group==='收藏')entries=favoriteSkills;
  else if(AW.group==='精选场景')entries=afFeaturedIds.map(afSkillEntry).filter(Boolean);
- else if(AW.group==='批量基建')entries=afBatchSkills.filter(entry=>!AW.category||entry.category===AW.category);
- else if(AW.group!=='收藏')entries=AS.skills.filter(entry=>entry.group===AW.group&&(!AW.category||entry.category===AW.category));
+ else if(AW.group==='批量基建')entries=afBatchSkills;
+ else if(AW.group!=='收藏')entries=AS.skills.filter(entry=>entry.group===AW.group);
  const custom=AW.group==='自定义与辅助'||AW.group==='收藏',tips=AW.group==='收藏'?favorites:workspace.customTips;
  const customCards=(custom?entries.map(afSceneCard).join('')+tips.map(afCustomTipCard).join('')+(AW.group==='自定义与辅助'?`<button type="button" class="af-custom-tip-add" data-r-action="aw-create-custom-tip" aria-label="新建自定义妙招"><b>＋</b><small role="tooltip">自定义妙招</small></button>`:''):'');
  const tabs=[...(favorites.length||favoriteSkills.length?['收藏']:[]),'精选场景',...visibleGroups.map(group=>group.name)];
- const categoryNav=categories.length?`<nav class="af-skill-categories" aria-label="二级场景分类">${['',...categories].map(name=>awButton('aw-category',name||'全部',name,name===AW.category?'active':'')).join('')}</nav>`:'';
- return `<nav class="aw-scene-groups" aria-label="一级场景分类">${tabs.map(name=>awButton('aw-group',(name==='收藏'?'☆ ':icon(afGlyphs[name]||'spark'))+E(name),name,name===AW.group?'active':'')).join('')}</nav>${categoryNav}<div class="af-category-grid ${custom?'af-custom-tip-grid':''}" aria-label="${AW.group==='收藏'?'收藏妙招':custom?'自定义与辅助技能':'场景技能'}">${custom?customCards:entries.map(afSceneCard).join('')}</div>`;
+ return `<nav class="aw-scene-groups" aria-label="一级场景分类">${tabs.map(name=>awButton('aw-group',(name==='收藏'?'☆ ':icon(afGlyphs[name]||'spark'))+E(name),name,name===AW.group?'active':'')).join('')}</nav><div class="af-category-grid ${custom?'af-custom-tip-grid':''}" aria-label="${AW.group==='收藏'?'收藏妙招':custom?'自定义与辅助技能':'场景技能'}">${custom?customCards:entries.map(afSceneCard).join('')}</div>`;
 }
 awRenderScenes=function(){
  const scenes=$('#aw-scenes'),c=awChat(),active=!!(c.messages.length||c.reference||c.confirmationContext||c.diagnosisContext||(c.adPublishFlow&&c.adPublishFlow.stage!=='compose')||c.videoWorkflow?.runs?.length);

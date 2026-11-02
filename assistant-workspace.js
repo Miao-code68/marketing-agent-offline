@@ -121,8 +121,10 @@ function awRenderTips(){
 function awRenderScenes(){
   if(awChat().messages.length){$('#aw-scenes').hidden=true;$('#aw-scenes').innerHTML='';return;}
   $('#aw-scenes').hidden=false;
-  const group=AS.groups.find(g=>g.name===AW.group),rows=AS.skills.filter(s=>s.group===AW.group&&(!AW.category||s.category===AW.category));
-  $('#aw-scenes').innerHTML=`<div class="aw-scenes-head"><h3>从一个场景开始</h3><span>${AS.skills.length} 个技能 · ${AS.groups.reduce((total,item)=>total+item.categories.length,0)} 个场景分类</span></div><div class="aw-scene-groups">${AS.groups.map(g=>awButton('aw-group',`${g.name}<small>${g.count}</small>`,g.name,g.name===AW.group?'active':'')).join('')}</div><div class="aw-scene-categories">${['',...group.categories].map(c=>awButton('aw-category',c||'全部场景',c,c===AW.category?'active':'')).join('')}</div>${AW.group==='自定义与辅助'?'<p class="aw-advanced-note">高级辅助能力 · 日志与历史查询仍需原系统权限。</p>':''}<div class="aw-scenario-grid">${rows.map(s=>`<article class="aw-scenario"><small>${E(s.category)}</small><h4>${E(s.name)}</h4><p>${E(s.description)}</p><div>${awButton('aw-use-skill','开始这个场景 →',s.id)}${awButton('aw-skill-info','详情',s.id)}</div></article>`).join('')}</div><p class="aw-scenario-note">技能说明来自原项目；选择场景会准备需求，实际执行需连接原系统。</p>`;
+  if(!AS.groups.some(g=>g.name===AW.group))AW.group=AS.groups[0].name;
+  AW.category='';
+  const rows=AS.skills.filter(s=>s.group===AW.group);
+  $('#aw-scenes').innerHTML=`<div class="aw-scenes-head"><h3>从一个场景开始</h3><span>${AS.skills.length} 个技能 · ${AS.groups.length} 个一级分类</span></div><div class="aw-scene-groups">${AS.groups.map(g=>awButton('aw-group',`${g.name}<small>${g.count}</small>`,g.name,g.name===AW.group?'active':'')).join('')}</div>${AW.group==='自定义与辅助'?'<p class="aw-advanced-note">高级辅助能力 · 日志与历史查询仍需原系统权限。</p>':''}<div class="aw-scenario-grid">${rows.map(s=>`<article class="aw-scenario"><small>${E(s.category)}</small><h4>${E(s.name)}</h4><p>${E(s.description)}</p><div>${awButton('aw-use-skill','开始这个场景 →',s.id)}${awButton('aw-skill-info','详情',s.id)}</div></article>`).join('')}</div><p class="aw-scenario-note">技能说明来自原项目；选择场景会准备需求，实际执行需连接原系统。</p>`;
 }
 function awResolveCustomTip(c){return (c.customTipTemplate||'').replace(/【([^】]+)】/g,(token,name)=>{const item=(c.tipComponents||[]).find(component=>component.name===name);return item?`${name}：${item.value||awComponentDefaults[name]||'请选择'}`:token;});}
 function awRenderRichPrompt(c){
