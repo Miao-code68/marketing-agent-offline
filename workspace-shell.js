@@ -92,7 +92,7 @@ const wbRender=render;render=function(){
  if(wbIsTool()){$('#header-page').textContent='Ad agent / '+pages[page][1];$('#view').insertAdjacentHTML('afterbegin',`<div class="wb-tool-context"><a href="#ad-agent">← 返回 Agent 对话</a><span>Ad agent · ${E(pages[page][1])}</span><button data-r-action="af-workflows">切换工作流</button></div>`);}
  if(['brand-assets','deliverables','idea-notes'].includes(page))$('#view').insertAdjacentHTML('afterbegin','<div class="wb-tool-context"><a href="#ad-agent">← 返回 Agent</a><a href="#brand-assets">品牌与资料</a><a href="#deliverables">成片与文稿</a><a href="#idea-notes">灵感笔记</a></div>');
  if(page==='insights'&&$('#view .ip-heading h1')&&!$('#view .ip-trend-page'))$('#view .ip-heading h1').textContent='灵感库';
- if(page==='insights'&&document.documentElement.classList.contains('insights-only')&&new URLSearchParams(location.search).get('from')==='ad-agent'){const back=new URL('ad-agent.html',location.href);back.search=location.search;back.searchParams.delete('from');back.hash='ad-agent';$('.breadcrumb').innerHTML=`<a class="wb-app-return" href="${E(back.href)}">← 返回 Ad Agent 应用</a><span>/</span><b>灵感库</b>`;}
+ if(page==='insights'&&document.documentElement.classList.contains('insights-only')&&new URLSearchParams(location.search).get('from')==='ad-agent'){const back=new URL('ad-agent.html',location.href);back.search=location.search;back.searchParams.delete('from');back.hash='ad-agent';$('.breadcrumb').innerHTML=`<a id="header-project" class="wb-app-return" href="${E(back.href)}">← 返回 Ad Agent 应用</a><span>/</span><b id="header-page">灵感库</b>`;}
  wbSyncAgentMenu();
  if(wbTaskDialog.open)wbDrawTasks();
 };
