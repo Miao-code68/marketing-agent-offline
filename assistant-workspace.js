@@ -55,7 +55,7 @@ $('#aw-topbar').append(assistantShell.querySelector('.drawer-context'),assistant
 $('#aw-main-scroll').append($('#assistant-body'),assistantShell.querySelector('.composer-area'));
 $('#aw-main-scroll').insertAdjacentHTML('beforeend','<section id="aw-scenes"></section>');
 assistantShell.querySelector('.drawer-head b').textContent='营销对话助手';
-assistantShell.querySelector('.composer-tools').innerHTML=`${awButton('aw-tips',icon('spark')+' 妙招')}${awButton('aw-upload',icon('folder')+' 本地上传')}${awButton('aw-pick-skill',icon('spark')+' 指定技能')}${awButton('aw-presets','▦ 策略预设')}<button type="button" id="add-source" class="aw-source-button">＋ 参考资料</button><span class="aw-send-space"></span>`+$('#send').outerHTML;
+assistantShell.querySelector('.composer-tools').innerHTML=`${awButton('aw-tips',icon('spark')+' 妙招')}${awButton('aw-upload',icon('folder')+' 本地上传')}${awButton('aw-pick-skill',icon('wrench')+' 选择技能')}${awButton('aw-presets','▦ 策略预设')}<button type="button" id="add-source" class="aw-source-button">＋ 参考资料</button><span class="aw-send-space"></span>`+$('#send').outerHTML;
 $('#add-source').onclick=()=>addSource();
 $('#composer').insertAdjacentHTML('beforebegin','<section id="aw-tips-panel" hidden></section><div id="aw-context-chips"></div>');
 $('#prompt').insertAdjacentHTML('beforebegin','<section id="aw-rich-prompt" aria-label="自定义妙招提示词" hidden></section>');
