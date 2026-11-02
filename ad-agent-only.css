@@ -493,8 +493,8 @@ html.ad-agent-only .ad-agent-expert-section .ad-agent-side-label button:hover{ba
 html.ad-agent-only .ad-agent-my-tasks{display:grid;grid-template-columns:19px minmax(0,1fr) auto;align-items:center;width:calc(100% - 4px);gap:9px;margin:5px 2px 8px;padding:9px 10px;border:0;border-radius:9px;background:transparent;color:#4c5562;text-align:left}html.ad-agent-only .ad-agent-my-tasks:hover,html.ad-agent-only .ad-agent-my-tasks.active{background:#e7f0ff;color:#2f6fd6}html.ad-agent-only .ad-agent-my-tasks>svg{width:17px;height:17px;fill:none;stroke:currentColor}html.ad-agent-only .ad-agent-my-tasks>span{display:grid;gap:2px;min-width:0}html.ad-agent-only .ad-agent-my-tasks b{font-size:11px}html.ad-agent-only .ad-agent-my-tasks small{color:#929ba8;font-size:8px}html.ad-agent-only .ad-agent-my-tasks em{display:grid;min-width:19px;height:19px;place-items:center;border-radius:10px;background:#fff0dd;color:#c87819;font-size:8px;font-style:normal}
 html.ad-agent-only .ad-agent-expert-wrap{position:relative;display:flex;align-items:center;margin:2px 0;border-radius:8px}
 html.ad-agent-only .ad-agent-expert-wrap.active{background:#e8f0ff}
-html.ad-agent-only .ad-agent-expert-row{display:grid;width:100%;min-width:0;grid-template-columns:26px minmax(0,1fr);align-items:center;gap:8px;padding:6px 29px 6px 7px;border:0;border-radius:8px;background:transparent;color:#4f5866;text-align:left}
-html.ad-agent-only .ad-agent-expert-row>span{display:grid;width:24px;height:24px;place-items:center;border-radius:50%;background:linear-gradient(145deg,#e8efff,#d6e3ff);color:#426aaf;font-size:9px;font-weight:750}
+html.ad-agent-only .ad-agent-expert-row{display:grid;width:100%;min-width:0;grid-template-columns:26px minmax(0,1fr) 13px;align-items:center;gap:8px;padding:6px 58px 6px 7px;border:0;border-radius:8px;background:transparent;color:#4f5866;text-align:left}
+html.ad-agent-only .ad-agent-expert-row>span:first-child{display:grid;width:24px;height:24px;place-items:center;border-radius:50%;background:linear-gradient(145deg,#e8efff,#d6e3ff);color:#426aaf;font-size:9px;font-weight:750}
 html.ad-agent-only .ad-agent-expert-row>b{overflow:hidden;font-size:11px;font-weight:520;text-overflow:ellipsis;white-space:nowrap}
 html.ad-agent-only .ad-agent-expert-wrap.active .ad-agent-expert-row{color:#2f6fd6}
 html.ad-agent-only .ad-agent-expert-delete{position:absolute;right:5px;display:grid;width:22px;height:22px;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:#9aa3af;font-size:15px;opacity:0}
@@ -551,3 +551,8 @@ html.ad-agent-only .ad-agent-node-menu button:hover{background:#f0f4fa!important
 html.ad-agent-only .ad-agent-expert-chats{margin:0 0 4px 9px;padding-left:5px;border-left:1px solid #e3e9f2}
 html.ad-agent-only .ad-agent-expert-project-direct .ad-agent-expert-chats{margin-left:0;padding-left:0;border-left:0}
 html.ad-agent-only .ad-agent-expert-chats>small{display:block;padding:4px 8px;color:#a3adba;font-size:8px}
+html.ad-agent-only .ad-agent-tree-chevron{width:12px!important;height:12px!important;flex:none;fill:none;stroke:currentColor!important;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:transform .16s ease}
+html.ad-agent-only .ad-agent-tree-chevron.open{transform:rotate(90deg)}
+html.ad-agent-only .ad-agent-tree-spacer{display:block;width:12px;height:12px;flex:none;background:transparent!important}
+html.ad-agent-only .ad-agent-expert-project-main>.ad-agent-tree-chevron,html.ad-agent-only .ad-agent-expert-project-main>.ad-agent-tree-spacer{order:-2}
+html.ad-agent-only .ad-agent-expert-project-main:hover .ad-agent-tree-chevron,html.ad-agent-only .ad-agent-expert-row:hover .ad-agent-tree-chevron{color:#2f6fd6}
