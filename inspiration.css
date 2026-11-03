@@ -108,3 +108,6 @@
 .ip-card .ip-duration{bottom:58px}
 .ip-card .ip-inline-host{z-index:5}
 @media(hover:none){.ip-card .ip-hover{opacity:1}.ip-card .ip-play-actions{top:50%;bottom:auto}.ip-card .ip-duration{bottom:56px}}
+
+/* Video content category: filterable metadata shown directly on the preview. */
+.ip-video-category-badge{position:absolute;z-index:6;top:11px;left:50%;transform:translateX(-50%);max-width:calc(100% - 150px);overflow:hidden;padding:5px 10px;border:1px solid #c8daf8;border-radius:6px;background:#edf4ffeb;color:#316bc9;box-shadow:0 4px 13px #173d7520;backdrop-filter:blur(7px);font-size:10px;font-weight:600;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}.ip-platform-badge{z-index:6}@media(max-width:600px){.ip-video-category-badge{top:7px;max-width:calc(100% - 100px);padding:4px 7px;font-size:9px}}

@@ -1,7 +1,7 @@
 'use strict';
 const IM=window.InspirationModel;
 workspace.inspiration??={saved:[]};
-const IS={tab:'videos',platform:'抖音',first:'',second:'',third:'',tagOpen:false,query:'',sort:'newest',mediaKind:'video',overviewQuery:'',hotDate:'',hotStart:'',hotEnd:'',page:1,pageSize:6,collection:'all',active:null,objectURL:null,editing:false,detailTab:'info',trendPlatform:'抖音',trendType:'star',trendView:'cloud',trendKeyword:'',trendStart:'2026-10-21',trendEnd:'2026-10-27'};
+const IS={tab:'videos',platform:'抖音',videoCategory:'',first:'',second:'',third:'',tagOpen:false,query:'',sort:'newest',mediaKind:'video',overviewQuery:'',hotDate:'',hotStart:'',hotEnd:'',page:1,pageSize:6,collection:'all',active:null,objectURL:null,editing:false,detailTab:'info',trendPlatform:'抖音',trendType:'star',trendView:'cloud',trendKeyword:'',trendStart:'2026-10-21',trendEnd:'2026-10-27'};
 const ipButton=(action,id,label,active=false)=>`<button data-r-action="${action}" data-id="${E(id)}" class="${active?'active':''}" aria-pressed="${active}">${E(label)}</button>`;
 
 // All three libraries share rendering, taxonomy and date validation. Only their data source differs.
@@ -16,6 +16,13 @@ function ipContentMeta(c){
  const seed=ipSeed(c.id||c.title);return {publishedAt:c.publishedAt||'2026/10/30',likes:c.likes??(2680+seed%6800),comments:c.comments??(86+seed%520),favorites:c.favorites??(420+seed%1900),shares:c.shares??(61+seed%640)};
 }
 function ipMetric(value){return Number(value||0).toLocaleString('zh-CN');}
+const ipVideoCategories=['个人成长','颜值造型','游戏','小剧场','舞蹈才艺','潮流风尚','休闲玩乐','生活记录'];
+function ipVideoCategory(c){
+ const explicit=c.videoCategory||c.contentCategory;if(ipVideoCategories.includes(explicit))return explicit;
+ const text=`${c.title||''} ${c.category||''} ${c.art||''}`;
+ const rules=[['个人成长',/成长|职场|效率|学习|教程|清单|看板|app|dashboard/i],['颜值造型',/颜值|美妆|妆容|穿搭|造型/],['游戏',/游戏|关卡|开黑|game/i],['小剧场',/剧情|短剧|小剧场|演绎/],['舞蹈才艺',/舞蹈|唱歌|音乐|才艺/],['潮流风尚',/潮流|时尚|耳机|earbuds/i],['休闲玩乐',/旅行|探店|休闲|玩乐/],['生活记录',/通勤|生活|日常|记录|commute|bottle/i]];
+ return rules.find(([,pattern])=>pattern.test(text))?.[0]||ipVideoCategories[ipSeed(c.id||c.title)%ipVideoCategories.length];
+}
 const ipProfiles={
  commute:{contentTypes:['热点'],userScene:'喜欢记录通勤和下班生活、寻找松弛感的年轻用户',emotions:['轻松快乐','共鸣'],body:'视频从日常通勤中的疲惫时刻切入，用人物动作和环境变化把普通路程拍成一段有节奏的生活记录。前段快速建立“下班后也想留一点时间给自己”的情绪，中段用连续场景展示行动过程，结尾以轻松状态回扣主题。'},
  game:{contentTypes:['游戏广告','热点'],userScene:'喜欢游戏、关注过关技巧和组队体验的玩家',emotions:['好奇','爽感'],body:'视频以游戏关卡中的即时问题开场，主角先展示一次失败操作，再逐步拆出正确路径和关键动作。画面在角色全景、操作界面和局部特写之间切换，让用户不用实际试玩也能理解玩法、难点和完成后的反馈。'},
@@ -105,14 +112,14 @@ function ipTaxonomyPicker(){
   return `<div class="ip-taxonomy-field"><span>内容标签</span><details id="ip-taxonomy-picker" ${IS.tagOpen?'open':''}><summary aria-label="选择内容标签"><span>${path.length?path.map(E).join(' / '):'全部内容标签'}</span><i>⌄</i></summary><div class="ip-taxonomy-menu"><header><b>按标签树筛选</b><small>一级 → 二级 → 三级 · 标签树 v${E(IM.taxonomyVersion)}</small>${path.length?'<button type="button" data-r-action="ip-tag-clear">清除</button>':''}</header><div class="ip-taxonomy-columns"><section><h3>一级标签</h3>${roots.map(n=>button('first',n.name_zh,n.name_zh,n.name_zh===IS.first,IM.children(n.id).length>0)).join('')}</section><section class="${root?'':'disabled'}"><h3>二级标签</h3>${root?fields.map(n=>button('second',n.name_zh,n.name_zh,n.name_zh===IS.second,IM.children(n.id).length>0)).join(''):'<p>请先选择一级标签</p>'}</section><section class="${field?'':'disabled'}"><h3>三级标签</h3>${field?(field.type==='value'?`<label class="ip-taxonomy-text">整体概述关键词<input id="ip-overview" placeholder="输入关键词筛选概述" value="${E(IS.overviewQuery)}"></label>`:options.map(n=>button('third',n.name_zh,n.name_zh,n.name_zh===IS.third)).join('')):'<p>请先选择二级标签</p>'}</section></div><footer>${path.length?`当前范围：${path.map(E).join(' › ')}`:'选择任意层级即可筛选，继续向右可缩小范围'}</footer></div></details></div>`;
 }
 function inspirationFilters(){
-  return `<section class="ip-filters" aria-label="素材筛选"><div class="ip-filter-grid"><label class="ip-field"><span>来源平台</span><select id="ip-platform" aria-label="来源平台"><option value="抖音" selected>抖音</option></select></label><div class="ip-field"><span>热点时间</span><button id="ip-hot-date" type="button" aria-haspopup="dialog" aria-controls="ip-date-picker" aria-expanded="false" title="${E(ipRangeLabel())}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18"/></svg><span>${E(ipRangeLabel())}</span><span aria-hidden="true">⌄</span></button></div>${ipTaxonomyPicker()}<div class="ip-filter-tools"><span>上传时间 · 近 30 天</span><button class="ip-reset" data-r-action="ip-reset">重置筛选 ↺</button></div></div>${IS.hotStart?'<div class="ip-filter-bottom">仅显示所选时间范围内的素材，热点时间取素材上传时间。</div>':''}</section>`;
+  return `<section class="ip-filters" aria-label="素材筛选"><div class="ip-filter-grid"><label class="ip-field"><span>来源平台</span><select id="ip-platform" aria-label="来源平台"><option value="抖音" selected>抖音</option></select></label><div class="ip-field"><span>热点时间</span><button id="ip-hot-date" type="button" aria-haspopup="dialog" aria-controls="ip-date-picker" aria-expanded="false" title="${E(ipRangeLabel())}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18"/></svg><span>${E(ipRangeLabel())}</span><span aria-hidden="true">⌄</span></button></div><label class="ip-field"><span>视频类别</span><select id="ip-video-category" aria-label="视频类别"><option value="">全部类别</option>${ipVideoCategories.map(value=>`<option value="${E(value)}" ${IS.videoCategory===value?'selected':''}>${E(value)}</option>`).join('')}</select></label>${ipTaxonomyPicker()}<div class="ip-filter-tools"><span>上传时间 · 近 30 天</span><button class="ip-reset" data-r-action="ip-reset">重置筛选 ↺</button></div></div>${IS.hotStart?'<div class="ip-filter-bottom">仅显示所选时间范围内的素材，热点时间取素材上传时间。</div>':''}</section>`;
 }
 function ipCardHTML(c){
- return `<article class="ip-card" data-clip="${E(c.id)}"><div class="ip-cover">${inspirationArt(c)}<span class="ip-platform-badge">${E(c.platform)}</span><span class="ip-duration">${c.mediaType==='image'?'图片':IM.time(c.duration)}</span><div class="ip-hover">${c.mediaType==='video'?`<div class="ip-play-actions"><button class="ip-play" data-r-action="ip-play" data-id="${E(c.id)}" aria-label="小屏播放">▶</button><button class="ip-expand" data-r-action="ip-expand" data-id="${E(c.id)}" aria-label="全屏查看">⛶</button></div>`:''}<div class="ip-card-actions"><button data-r-action="${c.generated?'ip-expand':'ip-open'}" data-id="${E(c.id)}">${icon('eye')}${c.generated?'预览内容':'查看灵感'}</button></div></div><div class="ip-inline-host" hidden></div></div><div class="ip-card-copy"><div class="ip-card-title"><h3>${E(ipCardTitle(c))}</h3>${ipFavoriteButton(c)}${!c.demo&&!c.generated&&ipLibraryMode()==='insights'?`<button class="ip-card-delete" data-r-action="ip-delete" data-id="${E(c.id)}" aria-label="删除 ${E(c.title)}" data-tooltip="删除">${icon('trash')}</button>`:''}</div>${ipCardBody(c)}${ipCardMeta(c)}</div></article>`;
+ return `<article class="ip-card" data-clip="${E(c.id)}"><div class="ip-cover">${inspirationArt(c)}<span class="ip-platform-badge">${E(c.platform)}</span>${c.mediaType==='video'?`<span class="ip-video-category-badge">${E(ipVideoCategory(c))}</span>`:''}<span class="ip-duration">${c.mediaType==='image'?'图片':IM.time(c.duration)}</span><div class="ip-hover">${c.mediaType==='video'?`<div class="ip-play-actions"><button class="ip-play" data-r-action="ip-play" data-id="${E(c.id)}" aria-label="小屏播放">▶</button><button class="ip-expand" data-r-action="ip-expand" data-id="${E(c.id)}" aria-label="全屏查看">⛶</button></div>`:''}<div class="ip-card-actions"><button data-r-action="${c.generated?'ip-expand':'ip-open'}" data-id="${E(c.id)}">${icon('eye')}${c.generated?'预览内容':'查看灵感'}</button></div></div><div class="ip-inline-host" hidden></div></div><div class="ip-card-copy"><div class="ip-card-title"><h3>${E(ipCardTitle(c))}</h3>${ipFavoriteButton(c)}${!c.demo&&!c.generated&&ipLibraryMode()==='insights'?`<button class="ip-card-delete" data-r-action="ip-delete" data-id="${E(c.id)}" aria-label="删除 ${E(c.title)}" data-tooltip="删除">${icon('trash')}</button>`:''}</div>${ipCardBody(c)}${ipCardMeta(c)}</div></article>`;
 }
 function inspirationCards(){
   stopInlineVideo();
-  const pool=inspirationRows().filter(x=>(IS.collection!=='mine'||!x.demo)&&x.mediaType===IS.mediaKind),rows=IM.filterRows(pool,IS);
+  const pool=inspirationRows().filter(x=>(IS.collection!=='mine'||!x.demo)&&x.mediaType===IS.mediaKind&&(!IS.videoCategory||ipVideoCategory(x)===IS.videoCategory)),rows=IM.filterRows(pool,IS);
   const pages=Math.max(1,Math.ceil(rows.length/IS.pageSize));IS.page=Math.min(Math.max(1,IS.page),pages);
   $('#ip-count').textContent=rows.length;
   $('#ip-grid').classList.toggle('ip-image-wall',IS.mediaKind==='image');
@@ -163,6 +170,7 @@ function renderInspirationLibrary(host=$('#view')){
   $('#ip-hot-date').onclick=ipOpenDatePicker;
   const taxonomyPicker=$('#ip-taxonomy-picker');if(taxonomyPicker)taxonomyPicker.ontoggle=()=>{IS.tagOpen=taxonomyPicker.open;};
   for(const [id,key] of [['query','query'],['sort','sort'],['overview','overviewQuery']]){const el=$('#ip-'+id);if(el)el[el.tagName==='INPUT'?'oninput':'onchange']=e=>{IS[key]=e.target.value;IS.page=1;inspirationCards();};}
+  const videoCategory=$('#ip-video-category');if(videoCategory)videoCategory.onchange=e=>{IS.videoCategory=e.target.value;IS.page=1;inspirationCards();};
   for(const key of ['platform']){const el=$('#ip-'+key);if(el)el.onchange=e=>{
     const value=e.target.value;
     IS[key]=value;IS.page=1;
@@ -185,7 +193,7 @@ R.invoke('ip-trend-view',b=>{IS.trendView=b.dataset.id;render();});
 R.invoke('ip-trend-word',b=>{IS.trendKeyword=b.dataset.id;render();});
 R.invoke('ip-tag-level',b=>{const level=b.dataset.level,value=b.dataset.id;if(level==='first'){IS.first=value;IS.second='';IS.third='';IS.overviewQuery='';IS.tagOpen=true;}else if(level==='second'){IS.second=value;IS.third='';IS.overviewQuery='';IS.tagOpen=true;}else{IS.third=value;IS.tagOpen=false;}IS.page=1;render();});
 R.invoke('ip-tag-clear',()=>{Object.assign(IS,{first:'',second:'',third:'',overviewQuery:'',tagOpen:true,page:1});render();});
-R.invoke('ip-reset',()=>{Object.assign(IS,{platform:'',first:'',second:'',third:'',tagOpen:false,query:'',overviewQuery:'',hotDate:'',hotStart:'',hotEnd:'',collection:'all',page:1});if(IS.tab==='trends')Object.assign(IS,{trendPlatform:'',trendKeyword:'',trendStart:'2026-10-21',trendEnd:'2026-10-27'});render();});
+R.invoke('ip-reset',()=>{Object.assign(IS,{platform:'',videoCategory:'',first:'',second:'',third:'',tagOpen:false,query:'',overviewQuery:'',hotDate:'',hotStart:'',hotEnd:'',collection:'all',page:1});if(IS.tab==='trends')Object.assign(IS,{trendPlatform:'',trendKeyword:'',trendStart:'2026-10-21',trendEnd:'2026-10-27'});render();});
 R.invoke('ip-collection',button=>{IS.collection=button.dataset.id;IS.page=1;render();});
 R.invoke('ip-page',b=>{IS.page=Number(b.dataset.id);inspirationCards();$('#ip-grid').scrollIntoView({block:'start',behavior:'smooth'});});
 const oldProductionStep=R.actions['production-step'];R.invoke('production-step',b=>{if(b.dataset.id==='inspiration'){IS.tab='videos';if(page==='ad-agent'&&typeof wbAgentOpen==='function')wbAgentOpen('inspiration');else location.hash='insights';}else oldProductionStep(b);});
