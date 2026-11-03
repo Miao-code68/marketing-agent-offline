@@ -74,7 +74,7 @@
     const taskRows = tasks.length
       ? tasks.slice(0, 5).map(task => `<button type="button" class="ad-agent-task-row" data-r-action="wb-automation" title="${E(task.title)}">${E(task.title)}</button>`).join('')
       : '<p class="ad-agent-empty-task">暂无自动化任务</p>';
-    const activeExpertId = typeof awChat === 'function' ? awChat()?.expert?.id : null;
+    const activeExpertId = WB.sidebarExpertId || (typeof awChat === 'function' ? awChat()?.expert?.id : null) || workspace.lastSelectedExpertId;
     const experts = typeof wbSidebarExperts === 'function' ? wbSidebarExperts() : [];
     const pinIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l-1 5 3 3v2H6v-2l3-3-1-5Z M12 13v8"/></svg>';
     const expertRow = expert => {
@@ -106,6 +106,7 @@
 
   R.invoke('wb-toggle-expert-tree', button => {
     const id = button.dataset.id;
+    WB.sidebarExpertId = id;
     treeState().experts[id] = button.getAttribute('aria-expanded') !== 'true';
     persist();
     renderStandaloneSidebar();
@@ -113,6 +114,8 @@
 
   R.invoke('wb-toggle-expert-project', button => {
     const id = button.dataset.id;
+    const project = workspace.projects.find(item => item.id === id);
+    if(project?.expertId) WB.sidebarExpertId = project.expertId;
     treeState().projects[id] = button.getAttribute('aria-expanded') !== 'true';
     persist();
     renderStandaloneSidebar();
