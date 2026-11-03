@@ -201,6 +201,38 @@ html.ad-agent-only #aw-sidebar-top #assistant-new:hover {
   background: #eef3fb;
 }
 
+html.ad-agent-only #aw-sidebar-top .ad-agent-coming-soon {
+  position: relative;
+  cursor: help;
+}
+
+html.ad-agent-only #aw-sidebar-top .ad-agent-coming-soon::after {
+  position: absolute;
+  z-index: 80;
+  left: calc(100% + 9px);
+  top: 50%;
+  width: max-content;
+  padding: 7px 10px;
+  border-radius: 7px;
+  background: #27303f;
+  color: #fff;
+  box-shadow: 0 8px 22px #1c273a33;
+  content: attr(data-tooltip);
+  font-size: 10px;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(0, -50%) translateX(-4px);
+  transition: opacity .14s ease, transform .14s ease;
+  white-space: nowrap;
+}
+
+html.ad-agent-only #aw-sidebar-top .ad-agent-coming-soon:hover::after,
+html.ad-agent-only #aw-sidebar-top .ad-agent-coming-soon:focus-visible::after {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
 html.ad-agent-only #aw-sidebar-top svg {
   width: 15px;
   height: 15px;
