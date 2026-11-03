@@ -58,18 +58,16 @@ const wbRenderAssistant=renderAssistant;renderAssistant=function(){
 };
 // The workspace navigation remains visible. Only Agent's own project/history pane collapses.
 workspace.shellPreferences.agentSidebarCollapsed??=workspace.shellPreferences.agentRailHidden??(innerWidth<800);
-afRail.insertAdjacentHTML('afterbegin',afRailButton('wb-toggle-agent-rail','显示项目与对话','collapse'));
 afRail.querySelector('[data-r-action="af-workflows"]').insertAdjacentHTML('beforebegin',afRailButton('wb-tasks','待办','plan'));
 afRail.querySelector('[data-r-action=af-workflows]').innerHTML=icon('pulse');
 afRail.querySelector('.af-rail-bottom').insertAdjacentHTML('beforebegin','<div class="wb-agent-resources"><a href="#assets" title="资产" aria-label="资产">'+icon('folder')+'</a><a href="#insights" title="内容洞察" aria-label="内容洞察">'+icon('eye')+'</a></div>');
-const wbAgentCollapse=document.createElement('button');wbAgentCollapse.id='wb-agent-collapse';wbAgentCollapse.type='button';wbAgentCollapse.dataset.rAction='wb-toggle-agent-rail';wbAgentCollapse.title='收起 Agent 菜单';wbAgentCollapse.setAttribute('aria-label','收起 Agent 菜单');wbAgentCollapse.innerHTML=icon('collapse');awBrand.append(wbAgentCollapse);
 const wbAgentActions=document.createElement('div');wbAgentActions.className='wb-agent-actions';wbAgentActions.innerHTML=[['wb-tasks','待办','plan'],['af-workflows','工作流','pulse'],['af-skills','技能','spark'],['af-config','知识与连接器','book']].map(([action,label,glyph])=>`<button type="button" data-r-action="${action}">${icon(glyph)}<span>${label}</span></button>`).join('');$('#aw-sidebar-top').after(wbAgentActions);
 function wbSyncAgentMenu(){
  const expanded=!workspace.shellPreferences.agentSidebarCollapsed;
  assistantShell.classList.remove('wb-rail-hidden');
  assistantShell.classList.toggle('wb-agent-menu-open',expanded);
  awBrand.querySelector('b').textContent=assistantShell.dataset.presentation==='page'?'Ad agent':'对话助手';
- for(const button of assistantShell.querySelectorAll('[data-r-action="wb-toggle-agent-rail"],[data-r-action="af-projects"]')){button.setAttribute('aria-expanded',String(expanded));button.setAttribute('aria-controls','aw-projects');}
+ for(const button of assistantShell.querySelectorAll('[data-r-action="wb-toggle-agent-rail"],[data-r-action="af-projects"]')){button.setAttribute('aria-expanded',String(expanded));button.setAttribute('aria-controls','aw-projects');button.setAttribute('aria-label',expanded?'收起左侧菜单':'展开左侧菜单');}
 }
 R.invoke('wb-toggle-agent-rail',()=>{workspace.shellPreferences.agentSidebarCollapsed=!workspace.shellPreferences.agentSidebarCollapsed;persist();wbSyncAgentMenu();});
 R.invoke('af-projects',()=>{workspace.shellPreferences.agentSidebarCollapsed=false;persist();wbSyncAgentMenu();});
@@ -124,7 +122,7 @@ workspace.assetLibrary??=[
 ];
 workspace.collaborationMembers??=['张淼','伍迪航','周子汇','唐青椿','曾乾','杨忠轩'];
 Object.assign(WB,{agentSection:'chat',taskQuery:'',taskStatus:'all',knowledgeTab:'team',knowledgeView:'library',knowledgeTeamTab:'members',knowledgeMemberQuery:'',knowledgeProjectQuery:'',knowledgeLogQuery:'',knowledgeQuery:'',knowledgeDisabled:false,knowledgeLayout:'list',knowledgeSort:'recent',knowledgeFolderId:'',skillTab:'shared',skillQuery:'',skillCategory:'全部',expertQuery:'',expertCategory:'全部',assetTab:'finished',assetQuery:'',assetFolder:'all',assetSubfolder:'all',assetUploadFiles:[],appQuery:'',collabPanelOpen:false,projectPanelOpen:false,membersOpen:false});
-afRail.innerHTML=`<a href="#assistant" class="af-logo" aria-label="返回首页" title="返回首页">➤</a>${afRailButton('af-new','新建对话','plus')}${afRailButton('wb-toggle-agent-rail','项目与对话','collapse')}${afRailButton('wb-automation','自动化','lightning')}${afRailButton('af-config','知识库管理','book')}${afRailButton('af-skills','技能管理','wrench')}${afRailButton('wb-experts','专家市场','users')}${afRailButton('wb-assets','资产库','folder')}${afRailButton('wb-apps','应用','apps')}${afRailButton('af-search','搜索','search')}<div class="af-rail-bottom" aria-hidden="true"></div>`;
+afRail.innerHTML=`<a href="#assistant" class="af-logo" aria-label="返回首页" title="返回首页">➤</a>${afRailButton('af-new','新建对话','plus')}${afRailButton('wb-automation','自动化','lightning')}${afRailButton('af-config','知识库管理','book')}${afRailButton('af-skills','技能管理','wrench')}${afRailButton('wb-experts','专家市场','users')}${afRailButton('wb-assets','资产库','folder')}${afRailButton('wb-apps','应用','apps')}${afRailButton('af-search','搜索','search')}<div class="af-rail-bottom" aria-hidden="true"></div>`;
 afRail.querySelectorAll(':scope > button').forEach(button=>{button.dataset.tooltip=button.getAttribute('aria-label');button.removeAttribute('title');});
 wbAgentActions.remove();
 const wbAgentPage=document.createElement('section');wbAgentPage.id='wb-agent-page';assistantShell.append(wbAgentPage);

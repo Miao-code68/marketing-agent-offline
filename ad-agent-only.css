@@ -16,24 +16,36 @@ html.ad-agent-only .app {
 }
 
 html.ad-agent-only #wb-agent-back,
-html.ad-agent-only #assistant-drawer[data-presentation="page"] .af-logo,
 html.ad-agent-only #assistant-drawer[data-presentation="page"] .wb-agent-resources {
   display: none !important;
 }
 
 html.ad-agent-only #assistant-drawer[data-presentation="page"] .af-rail {
+  display: flex !important;
+  width: 60px;
+  flex: 0 0 60px;
+}
+
+html.ad-agent-only #assistant-drawer[data-presentation="page"].wb-agent-menu-open .af-rail {
   display: none !important;
 }
 
 html.ad-agent-only #assistant-drawer[data-presentation="page"] .aw-layout {
   display: grid;
-  grid-template-columns: 212px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  flex: 1;
   overflow: hidden;
 }
 
-html.ad-agent-only #assistant-drawer[data-presentation="page"] .aw-sidebar,
-html.ad-agent-only #assistant-drawer[data-presentation="page"].wb-agent-menu-open .aw-sidebar,
-html.ad-agent-only #assistant-drawer[data-presentation="page"].aw-sidebar-open .aw-sidebar {
+html.ad-agent-only #assistant-drawer[data-presentation="page"].wb-agent-menu-open .aw-layout {
+  grid-template-columns: 212px minmax(0, 1fr);
+}
+
+html.ad-agent-only #assistant-drawer[data-presentation="page"] .aw-sidebar {
+  display: none !important;
+}
+
+html.ad-agent-only #assistant-drawer[data-presentation="page"].wb-agent-menu-open .aw-sidebar {
   position: relative;
   inset: auto;
   z-index: 10;
@@ -473,13 +485,11 @@ html.ad-agent-only #assistant-drawer[data-presentation="page"].wb-inner-page .aw
     min-height: 100dvh;
   }
 
-  html.ad-agent-only #assistant-drawer[data-presentation="page"] .aw-layout {
+  html.ad-agent-only #assistant-drawer[data-presentation="page"].wb-agent-menu-open .aw-layout {
     grid-template-columns: 188px minmax(0, 1fr);
   }
 
-  html.ad-agent-only #assistant-drawer[data-presentation="page"] .aw-sidebar,
-  html.ad-agent-only #assistant-drawer[data-presentation="page"].wb-agent-menu-open .aw-sidebar,
-  html.ad-agent-only #assistant-drawer[data-presentation="page"].aw-sidebar-open .aw-sidebar {
+  html.ad-agent-only #assistant-drawer[data-presentation="page"].wb-agent-menu-open .aw-sidebar {
     width: 188px;
     min-width: 188px;
     flex-basis: 188px;
