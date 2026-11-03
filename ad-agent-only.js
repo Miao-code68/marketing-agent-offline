@@ -67,7 +67,8 @@
     };
     if (newChat) newChat.classList.toggle('active', selectedSection === 'chat');
     sidebarTop.querySelectorAll('.ad-agent-menu-item').forEach(button => {
-      button.classList.toggle('active', sectionByAction[button.dataset.rAction] === selectedSection);
+      const target = sectionByAction[button.dataset.rAction];
+      button.classList.toggle('active', target === selectedSection || (target === 'apps' && selectedSection === 'inspiration'));
     });
 
     const tasks = (R.data.tasks || []).filter(task => task.projectId === state.id);
@@ -122,6 +123,7 @@
   });
 
   function showAdAgentOnly() {
+    if (new URLSearchParams(location.search).get('section') === 'inspiration') WB.agentSection = 'inspiration';
     if (location.hash !== targetHash) {
       history.replaceState(null, '', `${location.pathname}${location.search}${targetHash}`);
     }

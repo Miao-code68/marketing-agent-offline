@@ -131,7 +131,7 @@ document.addEventListener('click',event=>{const trigger=event.target.closest('a[
 R.invoke('wb-agent-back',()=>{location.hash=WB.agentReturnHash&&WB.agentReturnHash!=='#ad-agent'?WB.agentReturnHash:'#assistant';});
 const wbHistoryToggle=document.createElement('button');wbHistoryToggle.className='wb-history-toggle';wbHistoryToggle.dataset.rAction='wb-toggle-agent-rail';wbHistoryToggle.title='显示或收起项目与对话';wbHistoryToggle.setAttribute('aria-label','显示或收起项目与对话');wbHistoryToggle.innerHTML=icon('collapse');$('.aw-main').prepend(wbHistoryToggle);
 if(!workspace.shellPreferences.agentMenuV2){workspace.shellPreferences.agentSidebarCollapsed=true;workspace.shellPreferences.agentMenuV2=true;persist();}
-function wbAgentOpen(section){WB.agentSection=section;AW.folder=null;assistantTab='chat';if(location.hash!=='#ad-agent')location.hash='ad-agent';else renderAssistant();}
+function wbAgentOpen(section){WB.agentSection=section;AW.folder=null;assistantTab='chat';if(section!=='inspiration'&&typeof ipDrawer!=='undefined'&&ipDrawer.open)ipDrawer.close();if(location.hash!=='#ad-agent')location.hash='ad-agent';else renderAssistant();}
 R.invoke('wb-automation',()=>wbAgentOpen('automation'));
 R.invoke('af-config',()=>wbAgentOpen('knowledge'));
 R.invoke('af-skills',()=>wbAgentOpen('skills'));
@@ -439,15 +439,17 @@ R.invoke('wb-open-asset-upload',()=>{WB.assetUploadFiles=[];WB.assetUploadFolder
 R.invoke('wb-close-asset-upload',()=>wbAssetUploadDialog.close());
 R.invoke('wb-remove-asset-upload',button=>{WB.assetUploadFiles.splice(Number(button.dataset.id),1);wbDrawAssetUpload();});
 function wbAppsPage(){
- const applications=[{id:'inspiration',name:'灵感库',description:'发现优质内容与热门趋势，进入内容洞察和热点洞察。',meta:'内容洞察 · 热点洞察'}];
+ const applications=[{id:'inspiration',name:'灵感库',description:'发现值得借鉴的内容，在营销 Agent 中完成内容洞察。',meta:'内容洞察'}];
  const query=WB.appQuery.trim().toLowerCase(),rows=applications.filter(app=>(app.name+' '+app.description+' '+app.meta).toLowerCase().includes(query));
  return `<header class="wb-apps-head"><div><h1>应用</h1><p>选择应用进入对应工作空间</p></div><label class="wb-app-search" aria-label="搜索应用">${icon('search')}<input id="wb-app-query" placeholder="搜索应用" value="${E(WB.appQuery)}"></label></header><div class="wb-apps-body"><div class="wb-app-grid">${rows.map(app=>`<button type="button" class="wb-app-card" data-r-action="wb-open-app" data-id="${E(app.id)}"><span class="wb-app-icon">${icon('spark')}</span><span class="wb-app-copy"><b>${E(app.name)}</b><small>${E(app.description)}</small><em>${E(app.meta)}</em></span><span class="wb-app-arrow">进入 →</span></button>`).join('')||wbAgentEmpty('没有找到匹配的应用')}</div></div>`;
 }
 function wbRenderAgentPage(){
  const section=WB.agentSection,active=section!=='chat'&&assistantShell.dataset.presentation==='page';
  assistantShell.classList.toggle('wb-inner-page',active);
- afRail.querySelectorAll('button').forEach(b=>{const selected=({'af-new':'chat','wb-automation':'automation','af-config':'knowledge','af-skills':'skills','wb-experts':'experts','wb-assets':'assets','wb-apps':'apps'})[b.dataset.rAction]===section;b.classList.toggle('active',selected);if(selected)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+ afRail.querySelectorAll('button').forEach(b=>{const target=({'af-new':'chat','wb-automation':'automation','af-config':'knowledge','af-skills':'skills','wb-experts':'experts','wb-assets':'assets','wb-apps':'apps'})[b.dataset.rAction],selected=target===section||(target==='apps'&&section==='inspiration');b.classList.toggle('active',selected);if(selected)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
  if(!active)return;
+ wbAgentPage.classList.toggle('wb-inspiration-page',section==='inspiration');
+ if(section==='inspiration'){renderInspirationLibrary(wbAgentPage);return;}
  wbAgentPage.innerHTML=section==='automation'?wbAutomationPage():section==='knowledge'?wbKnowledgePage():section==='skills'?wbSkillsPage():section==='experts'?wbExpertPage():section==='assets'?wbAssetsPage():wbAppsPage();
  const bindQuery=(id,key)=>{const el=$(id);if(el)el.oninput=e=>{WB[key]=e.target.value;const pos=e.target.selectionStart;wbRenderAgentPage();$(id).focus();$(id).setSelectionRange(pos,pos);};};
  bindQuery('#wb-task-query','taskQuery');bindQuery('#wb-knowledge-query','knowledgeQuery');bindQuery('#wb-member-query','knowledgeMemberQuery');bindQuery('#wb-project-query','knowledgeProjectQuery');bindQuery('#wb-skill-query','skillQuery');bindQuery('#wb-expert-query','expertQuery');bindQuery('#wb-asset-query','assetQuery');bindQuery('#wb-app-query','appQuery');
@@ -474,7 +476,7 @@ R.invoke('wb-create-page-invite',()=>{const select=$('#wb-invite-page-permission
 R.invoke('wb-member-permission',button=>{const member=workspace.knowledgeTeam.members.find(item=>item.id===button.dataset.id);if(!member)return;modal('修改权限',`修改「${member.name}」在团队中的权限。`,[{key:'permission',label:'权限',options:['可读','可编辑','可管理'],value:member.permission}],values=>{member.permission=values.permission;wbTeamLog('修改成员权限',member.name+' · '+values.permission);});$('#save').textContent='保存';});
 R.invoke('wb-member-toggle',button=>{const member=workspace.knowledgeTeam.members.find(item=>item.id===button.dataset.id);if(!member)return;const next=member.status==='正常'?'已停用':'正常';modal(next==='已停用'?'停用成员':'启用成员',`确认将「${member.name}」设为${next}？`,[],()=>{member.status=next;wbTeamLog(next==='已停用'?'停用成员':'启用成员',member.name);});$('#save').textContent=next==='已停用'?'停用':'启用';});
 R.invoke('wb-member-remove',button=>{const member=workspace.knowledgeTeam.members.find(item=>item.id===button.dataset.id);if(!member)return;modal('移出团队',`确认将「${member.name}」移出团队？`,[],()=>{workspace.knowledgeTeam.members=workspace.knowledgeTeam.members.filter(item=>item.id!==member.id);wbTeamLog('移出团队',member.name);});$('#save').textContent='移出团队';});
-R.invoke('wb-open-app',b=>{if(b.dataset.id!=='inspiration')return;const target=new URL('insights.html',location.href);target.search=location.search;target.searchParams.set('from','ad-agent');target.hash='insights';location.assign(target.href);});
+R.invoke('wb-open-app',b=>{if(b.dataset.id==='inspiration')wbAgentOpen('inspiration');});
 const wbKnowledgeUploadDialog=document.createElement('dialog');wbKnowledgeUploadDialog.id='wb-knowledge-upload-dialog';wbKnowledgeUploadDialog.setAttribute('aria-label','上传知识');document.body.append(wbKnowledgeUploadDialog);
 function wbRenderKnowledgeUploadFiles(){const host=$('#wb-knowledge-upload-files');if(!host)return;const files=WB.knowledgeDraftFiles||[];host.innerHTML=files.map((file,index)=>`<span>${icon('book')}<b>${E(file.name)}</b><small>${file.size?Math.max(1,Math.round(file.size/1024))+' KB':'已上传'}</small><button type="button" data-r-action="wb-remove-knowledge-file" data-id="${index}" aria-label="移除${E(file.name)}">×</button></span>`).join('');}
 function wbKnowledgeForm(id,requestedFolderId=''){
