@@ -312,10 +312,10 @@ function vwWhiteRunHTML(run,c){
 }
 function vwPublishChoice(run){
  const decision=run.publishDecision;
- if(decision==='saved')return `<p>已保存到资产库，可在“资产 → AI 成片库”继续查看和使用。</p>`;
- if(decision==='later')return `<p>已暂不处理，本次成片会保留在当前对话中。后续仍可回复“保存到资产库”或“发布计划”。</p>`;
+ if(decision==='saved')return `<p>项目文件已保留，同时已保存到资产库，可在“资产 → AI 成片库”继续查看和使用。</p>`;
+ if(decision==='later')return `<p>已暂不处理，本次成片已自动保存到当前项目文件。后续仍可回复“保存到资产库”或“发布计划”。</p>`;
  if(decision==='publish')return `<p>${run.publishAssignee?`发布计划已移交给${E(run.publishAssignee)}。`:'已进入发布计划，请继续回复要移交的成员姓名，或回复“我来处理”。'}</p>`;
- return `<p>视频已经生成。请直接回复“保存到资产库”，或回复“发布计划”继续创建发布任务；发布计划也可以移交给指定成员处理。</p>`;
+ return `<p>视频已经生成并自动保存到当前项目文件。请直接回复“保存到资产库”，或回复“发布计划”继续创建发布任务；发布计划也可以移交给指定成员处理。</p>`;
 }
 function vwFinalVideoTitle(run){
  return run.finalTitle||run.result?.title||'这单外卖，拒绝配送';
