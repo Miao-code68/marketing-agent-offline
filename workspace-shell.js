@@ -591,18 +591,19 @@ function wbProjectFileKind(file){const type=(file.type||file.mime||'').toLowerCa
 function wbEnsureProjectFileSamples(project){
  project.projectFiles??=[];
  const conversations=project.chats?.length?project.chats:[{id:''}],known=new Set(project.projectFiles.map(file=>file.id));
- const add=file=>{if(!known.has(file.id)){known.add(file.id);project.projectFiles.push(file);}};
+ const add=file=>{const current=project.projectFiles.find(item=>item.id===file.id);if(current){current.directory=file.directory;return;}known.add(file.id);project.projectFiles.push(file);};
  conversations.forEach((conversation,chatIndex)=>{
   const sourceChatId=conversation.id||'',prefix=`${project.id}-${sourceChatId||'root'}`,base=Date.now()-chatIndex*3600000;
   const samples=[
-   {id:`demo-brief-${prefix}`,name:'新品视频创作需求.md',kind:'document',type:'text/markdown',directory:'01 需求与参考',origin:'AI生成',creator:'新媒体Agent',created:base-7200000,status:'已完成',sourceChatId,content:'# 新品视频创作需求\n\n## 创作目标\n用 30 秒竖版视频呈现产品核心卖点，并建立轻松、可信的内容氛围。'},
-   {id:`demo-reference-${prefix}`,name:'竞品画面参考.png',kind:'image',type:'image/png',directory:'01 需求与参考',origin:'AI生成',creator:'设计Agent',created:base-6900000,status:'已完成',sourceChatId,demoArt:true},
-   {id:`demo-script-${prefix}`,name:'新品视频分镜脚本.md',kind:'document',type:'text/markdown',directory:'02 创作过程',origin:'AI生成',creator:'新媒体Agent',created:base-5400000,status:'已完成',sourceChatId,content:'# 新品视频分镜脚本\n\n1. 三秒问题钩子\n2. 使用场景演示\n3. 核心卖点与行动引导'},
-   {id:`demo-storyboard-${prefix}`,name:'关键帧故事板.png',kind:'image',type:'image/png',directory:'02 创作过程',origin:'AI生成',creator:'设计Agent',created:base-4800000,status:'已完成',sourceChatId,demoArt:true},
-   {id:`demo-draft-${prefix}`,name:'新品视频初剪预览.mp4',kind:'video',type:'video/mp4',directory:'02 创作过程',origin:'AI生成',creator:'视频制作Agent',created:base-4200000,status:'已完成',sourceChatId,previewUrl:'./demo-generated-video.mp4'},
-   {id:`demo-doc-${prefix}`,name:'新品视频发布文案.md',kind:'document',type:'text/markdown',directory:'03 最终交付',origin:'AI生成',creator:'新媒体Agent',created:base-2600000,status:'已完成',sourceChatId,content:'# 新品视频发布文案\n\n这是配套发布正文、话题建议与评论区互动引导。'},
-   {id:`demo-image-${prefix}`,name:'新品视频封面第二版.png',kind:'image',type:'image/png',directory:'03 最终交付',origin:'AI生成',creator:'设计Agent',created:base-2200000,status:'已完成',sourceChatId,demoArt:true},
-   {id:`demo-video-${prefix}`,name:'新品视频复刻·最终版.mp4',kind:'video',type:'video/mp4',directory:'03 最终交付',origin:'AI生成',creator:'视频制作Agent',created:base-1800000,status:'已完成',sourceChatId,previewUrl:'./demo-generated-video.mp4'}
+   {id:`demo-brief-${prefix}`,name:'新品视频创作需求.md',kind:'document',type:'text/markdown',directory:'新品发布视频',origin:'AI生成',creator:'新媒体Agent',created:base-7200000,status:'已完成',sourceChatId,content:'# 新品视频创作需求\n\n## 创作目标\n用 30 秒竖版视频呈现产品核心卖点，并建立轻松、可信的内容氛围。'},
+   {id:`demo-reference-${prefix}`,name:'竞品画面参考.png',kind:'image',type:'image/png',directory:'新品发布视频',origin:'AI生成',creator:'设计Agent',created:base-6900000,status:'已完成',sourceChatId,demoArt:true},
+   {id:`demo-product-video-${prefix}`,name:'新品卖点演示片.mp4',kind:'video',type:'video/mp4',directory:'新品发布视频',origin:'AI生成',creator:'视频制作Agent',created:base-6200000,status:'已完成',sourceChatId,previewUrl:'./demo-generated-video.mp4'},
+   {id:`demo-script-${prefix}`,name:'新品视频分镜脚本.md',kind:'document',type:'text/markdown',directory:'社媒创意素材',origin:'AI生成',creator:'新媒体Agent',created:base-5400000,status:'已完成',sourceChatId,content:'# 新品视频分镜脚本\n\n1. 三秒问题钩子\n2. 使用场景演示\n3. 核心卖点与行动引导'},
+   {id:`demo-storyboard-${prefix}`,name:'关键帧故事板.png',kind:'image',type:'image/png',directory:'社媒创意素材',origin:'AI生成',creator:'设计Agent',created:base-4800000,status:'已完成',sourceChatId,demoArt:true},
+   {id:`demo-draft-${prefix}`,name:'新品视频初剪预览.mp4',kind:'video',type:'video/mp4',directory:'社媒创意素材',origin:'AI生成',creator:'视频制作Agent',created:base-4200000,status:'已完成',sourceChatId,previewUrl:'./demo-generated-video.mp4'},
+   {id:`demo-doc-${prefix}`,name:'新品视频发布文案.md',kind:'document',type:'text/markdown',directory:'投放复刻方案',origin:'AI生成',creator:'新媒体Agent',created:base-2600000,status:'已完成',sourceChatId,content:'# 新品视频发布文案\n\n这是配套发布正文、话题建议与评论区互动引导。'},
+   {id:`demo-image-${prefix}`,name:'新品视频封面第二版.png',kind:'image',type:'image/png',directory:'投放复刻方案',origin:'AI生成',creator:'设计Agent',created:base-2200000,status:'已完成',sourceChatId,demoArt:true},
+   {id:`demo-video-${prefix}`,name:'新品视频复刻·最终版.mp4',kind:'video',type:'video/mp4',directory:'投放复刻方案',origin:'AI生成',creator:'视频制作Agent',created:base-1800000,status:'已完成',sourceChatId,previewUrl:'./demo-generated-video.mp4'}
   ];
   samples.forEach(add);
  });
@@ -623,8 +624,8 @@ R.invoke('wb-save-project-file-asset',button=>{const {project,file}=wbFindProjec
 R.invoke('wb-save-message-project-file',button=>{const conversation=awChat(),index=Number(button.dataset.id),message=conversation.messages[index];if(!message?.text)return;state.projectFiles??=[];if(message.projectFileId)return toast('这条内容已经保存到项目文件');const id=uid(),name=`${conversation.title||'会话'} · 内容记录.md`;state.projectFiles.unshift({id,name,kind:'document',type:'text/markdown',origin:'手动保存',creator:conversation.expert?.name||'Agent',created:Date.now(),status:'已完成',sourceChatId:conversation.id,sourceMessageIndex:index,content:message.text});message.projectFileId=id;persist();renderAssistant();toast('已保存为项目文档');});
 function wbProjectPanelFileRow(file){return `<button type="button" class="wb-project-panel-file" data-r-action="wb-open-project-file" data-id="${E(file.id)}" data-owner="${E(file.projectId)}"><span class="${E(file.kind)}">${file.kind==='video'?'▶':file.kind==='image'?'▧':file.kind==='document'?'DOC':'FILE'}</span><span><b>${E(file.name)}</b><small>${E(file.origin)} · ${E(file.creator)}</small></span><em>›</em></button>`;}
 function wbDirectoryNode(title,body,count,depth=0,open=true){return `<details class="wb-directory-node depth-${depth}" ${open?'open':''}><summary>${icon('folder')}<b>${E(title)}</b><small>${count} 个文件</small></summary><div>${body}</div></details>`;}
-const wbFileDirectories=['01 需求与参考','02 创作过程','03 最终交付'];
-function wbFileDirectory(file){return file.directory||(['website','link'].includes(file.kind)?wbFileDirectories[0]:['document','image'].includes(file.kind)?wbFileDirectories[1]:wbFileDirectories[2]);}
+const wbFileDirectories=['新品发布视频','社媒创意素材','投放复刻方案'];
+function wbFileDirectory(file){return file.directory||(['website','link','document'].includes(file.kind)?wbFileDirectories[0]:file.kind==='image'?wbFileDirectories[1]:wbFileDirectories[2]);}
 function wbFileDirectoryNodes(files,depth=0){return wbFileDirectories.map(name=>{const rows=files.filter(file=>wbFileDirectory(file)===name);return wbDirectoryNode(name,rows.map(wbProjectPanelFileRow).join('')||'<p class="wb-directory-empty">暂无文件</p>',rows.length,depth,true);}).join('');}
 function wbConversationDirectoryTree(project,conversation,files,depth=0){return wbDirectoryNode(conversation?.title||'未命名会话',wbFileDirectoryNodes(files,depth+1),files.length,depth,true);}
 function wbGeneratedFilesDirectory(files,depth=0){return wbDirectoryNode('生成文件',wbFileDirectoryNodes(files,depth+1),files.length,depth,true);}
