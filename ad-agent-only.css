@@ -560,6 +560,7 @@ html.ad-agent-only .ad-agent-node-menu button{display:block!important;width:100%
 html.ad-agent-only .ad-agent-node-menu button:hover{background:#f0f4fa!important;color:#2f6fd6!important}
 html.ad-agent-only .ad-agent-node-menu button.menu-bottom{margin-top:4px!important;border-top:1px solid #edf0f5!important;border-radius:0 0 6px 6px!important;padding-top:9px!important;color:#e5484d!important}
 html.ad-agent-only .ad-agent-node-menu button.menu-bottom:hover{background:#fff1f1!important;color:#c72f35!important}
+html.ad-agent-only #composer [data-r-action="aw-tips"],html.ad-agent-only #aw-scenes,html.ad-agent-only #aw-tips-panel,html.ad-agent-only .composer-foot{display:none!important}
 html.ad-agent-only .ad-agent-expert-chats{margin:0 0 4px 9px;padding-left:5px;border-left:1px solid #e3e9f2}
 html.ad-agent-only .ad-agent-expert-project-direct .ad-agent-expert-chats{margin-left:0;padding-left:0;border-left:0}
 html.ad-agent-only .ad-agent-expert-chats>small{display:block;padding:4px 8px;color:#a3adba;font-size:8px}
