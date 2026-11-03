@@ -43,8 +43,6 @@
     const agentPage = document.querySelector('#wb-agent-page');
     const agentMain = document.querySelector('#assistant-drawer .aw-main');
     if (agentPage && agentMain && agentPage.parentElement !== agentMain) agentMain.append(agentPage);
-    const collaborationTaskCount = typeof wbCollabInboxTasks === 'function' ? wbCollabInboxTasks().length : Math.max(5, workspace.projects.reduce((total, project) => total + (project.chats || []).reduce((chatTotal, chat) => chatTotal + (chat.collaboration?.tasks?.length || 0), 0), 0));
-
     const newChat = document.querySelector('#assistant-new');
     if (newChat && !sidebarTop.querySelector('.ad-agent-menu-item')) {
       newChat.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>新建对话</span>';
@@ -58,9 +56,6 @@
         <button type="button" class="ad-agent-menu-item" data-r-action="wb-apps"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="2.25"/><circle cx="16" cy="8" r="2.25"/><circle cx="8" cy="16" r="2.25"/><rect x="13.75" y="13.75" width="4.5" height="4.5" rx="1"/></svg><span>应用</span></button>
       `);
     }
-    const taskBadge = projects.querySelector('.ad-agent-my-tasks em');
-    if (taskBadge) taskBadge.textContent = String(collaborationTaskCount);
-
     const selectedSection = typeof WB !== 'undefined' ? WB.agentSection : 'chat';
     const sectionByAction = {
       'wb-automation': 'automation',
@@ -102,7 +97,6 @@
         <div class="ad-agent-side-label">自动化任务</div>
         ${taskRows}
       </section>
-      <button type="button" class="ad-agent-my-tasks ${selectedSection==='collab-tasks'?'active':''}" data-r-action="wb-my-tasks">${icon('plan')}<span><b>我的任务</b><small>查看指派与协作进度</small></span><em>${collaborationTaskCount}</em></button>
       <section class="ad-agent-side-section ad-agent-expert-section">
         <div class="ad-agent-side-label"><span>专家</span><button type="button" data-r-action="wb-new-expert" aria-label="新建专家">＋</button></div>
         ${expertRows}
