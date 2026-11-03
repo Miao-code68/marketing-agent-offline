@@ -44,13 +44,12 @@ const awButton=(action,label,id='',cls='')=>`<button type="button" class="${cls}
 const awSkill=id=>AS.skills.find(s=>s.id===id)||R.data.skills.find(s=>s.id===id);
 function awChat(){const c=chat();c.skillIds??=[];c.presetIds??=[];c.attachments??=[];return c;}
 const assistantShell=$('#assistant-drawer');assistantShell.classList.add('aw-shell');
-const awLayout=document.createElement('div');awLayout.className='aw-layout';awLayout.innerHTML='<aside class="aw-sidebar"><div id="aw-sidebar-top"></div><input id="aw-chat-search" aria-label="搜索项目与对话" placeholder="搜索项目与对话"><div id="aw-projects"></div><div id="aw-sidebar-footer"></div></aside><section class="aw-main"><div id="aw-topbar"></div><div id="aw-main-scroll"></div></section>';
+const awLayout=document.createElement('div');awLayout.className='aw-layout';awLayout.innerHTML='<aside class="aw-sidebar"><div id="aw-sidebar-top"></div><input id="aw-chat-search" aria-label="搜索对话" placeholder="搜索对话"><div id="aw-projects"></div><div id="aw-sidebar-footer"></div></aside><section class="aw-main"><div id="aw-topbar"></div><div id="aw-main-scroll"></div></section>';
 assistantShell.append(awLayout);
 assistantShell.querySelector('.drawer-head').insertAdjacentHTML('afterbegin',awButton('aw-toggle-sidebar','☰','','aw-mobile-projects'));
 R.invoke('aw-toggle-sidebar',()=>assistantShell.classList.toggle('aw-sidebar-open'));
 
 $('#aw-sidebar-top').append($('#assistant-new'));$('#assistant-new').textContent='＋ 新建对话';
-$('#aw-sidebar-top').insertAdjacentHTML('beforeend',awButton('aw-new-project',icon('folder')+' 新建项目'));
 $('#aw-topbar').append(assistantShell.querySelector('.drawer-context'),assistantShell.querySelector('.drawer-tabs'));
 $('#aw-main-scroll').append($('#assistant-body'),assistantShell.querySelector('.composer-area'));
 $('#aw-main-scroll').insertAdjacentHTML('beforeend','<section id="aw-scenes"></section>');
@@ -64,16 +63,11 @@ const awCustomTipDialog=document.createElement('dialog');awCustomTipDialog.id='a
 $('#aw-chat-search').oninput=e=>{AW.query=e.target.value;awRenderProjects();};
 function awRenderProjects(){
   const q=AW.query.toLowerCase();
-  const projectHtml=`<div class="aw-sidebar-label">项目 <span>${workspace.projects.length}</span></div>`+workspace.projects.map(p=>{
-    const chats=(p.chats||[]).filter(c=>!q||(p.name+c.title).toLowerCase().includes(q));if(q&&!chats.length&&!p.name.toLowerCase().includes(q))return '';
-    return `<section class="aw-project ${p.id===state.id?'current':''}"><div class="aw-project-head" data-project-drop="${E(p.id)}">${awButton('aw-folder',icon('folder')+`<span>${E(p.name)}</span>`,p.id,'aw-folder-button')}<details class="aw-project-menu"><summary aria-label="项目操作：${E(p.name)}">···</summary><div>${awButton('aw-rename-project','重命名',p.id)}${awButton('wb-open-project-page','查看文件',p.id)}${awButton('aw-new-chat','新建会话',p.id)}${awButton('aw-delete-project','删除项目',p.id,'danger')}</div></details>${awButton('aw-new-chat','＋',p.id,'aw-project-plus')}</div>${(p.id===state.id||q)?`<div class="aw-chat-list">${chats.map(c=>`<div class="aw-chat-row" draggable="true" data-chat-owner="${E(p.id)}" data-chat-id="${E(c.id)}"><button data-r-action="aw-select-chat" data-id="${E(c.id)}" data-owner="${E(p.id)}" class="${p.id===state.id&&c.id===state.chatId&&!AW.folder?'active':''}" title="${E(c.title)}">${icon('chat')}<span>${E(c.title)}</span></button><button class="aw-move-button" data-r-action="aw-move-chat" data-id="${E(c.id)}" data-owner="${E(p.id)}" aria-label="移动对话：${E(c.title)}" title="移动到其他项目">↗</button></div>`).join('')||'<small>还没有对话</small>'}</div>`:''}</section>`;
-  }).join('');
-  const now=Date.now(),day=86400000,history=workspace.projects.flatMap(p=>(p.chats||[]).map(c=>({p,c,at:c.updated||c.created||0}))).filter(({p,c})=>!q||(p.name+' '+c.title+' '+(c.draft||'')+' '+c.messages.map(m=>m.text||'').join(' ')).toLocaleLowerCase().includes(q)).sort((a,b)=>b.at-a.at);
+  const now=Date.now(),day=86400000,history=workspace.projects.flatMap(p=>(p.chats||[]).map(c=>({p,c,at:c.updated||c.created||0}))).filter(({c})=>!q||(c.title+' '+(c.draft||'')+' '+c.messages.map(m=>m.text||'').join(' ')).toLocaleLowerCase().includes(q)).sort((a,b)=>b.at-a.at);
   const groups=[['7天内',r=>r.at>=now-7*day],['30天内',r=>r.at<now-7*day&&r.at>=now-30*day],['更早',r=>r.at<now-30*day]];
-  const historyHtml=`<section class="aw-history-section"><div class="aw-sidebar-label">历史对话 <span>${history.length}</span></div>${groups.map(([label,test])=>{const rows=history.filter(test);return rows.length?`<div class="aw-history-group"><h3>${label}</h3>${rows.map(({p,c})=>`<button type="button" data-r-action="aw-select-chat" data-id="${E(c.id)}" data-owner="${E(p.id)}" class="${p.id===state.id&&c.id===state.chatId&&!AW.folder?'active':''}" title="${E(p.name+' · '+c.title)}"><span>${E(c.title)}</span>${awHistoryStatusMarkup(c)}<small>${E(p.name)}</small></button>`).join('')}</div>`:'';}).join('')||'<p class="aw-history-empty">还没有历史对话</p>'}</section>`;
-  $('#aw-projects').innerHTML=projectHtml+historyHtml;
-  $('#aw-projects').querySelectorAll('.aw-project-plus').forEach(b=>b.setAttribute('aria-label','在此项目中新建对话'));
-  $('#aw-sidebar-footer').innerHTML=awButton('aw-settings',icon('book')+' 技能 · 连接器 · 知识')+(workspace.archivedProjects.length?awButton('aw-trash','已删除项目 · '+workspace.archivedProjects.length):'')+'<small>本地工作空间</small>';
+  const historyHtml=`<section class="aw-history-section"><div class="aw-sidebar-label">历史对话 <span>${history.length}</span></div>${groups.map(([label,test])=>{const rows=history.filter(test);return rows.length?`<div class="aw-history-group"><h3>${label}</h3>${rows.map(({p,c})=>`<button type="button" data-r-action="aw-select-chat" data-id="${E(c.id)}" data-owner="${E(p.id)}" class="${p.id===state.id&&c.id===state.chatId&&!AW.folder?'active':''}" title="${E(c.title)}"><span>${E(c.title)}</span>${awHistoryStatusMarkup(c)}</button>`).join('')}</div>`:'';}).join('')||'<p class="aw-history-empty">还没有历史对话</p>'}</section>`;
+  $('#aw-projects').innerHTML=historyHtml;
+  $('#aw-sidebar-footer').innerHTML=awButton('aw-settings',icon('book')+' 技能 · 连接器 · 知识')+'<small>本地工作空间</small>';
 }
 
 const awTipCatalog={

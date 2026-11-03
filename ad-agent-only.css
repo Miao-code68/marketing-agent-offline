@@ -538,6 +538,8 @@ html.ad-agent-only .ad-agent-expert-projects button:hover{background:#edf3fc;col
 /* Expert project tree: project folders own conversations and every level has pin/menu actions. */
 html.ad-agent-only .ad-agent-expert-pin svg,html.ad-agent-only .ad-agent-node-pin svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 html.ad-agent-only .ad-agent-expert-projects{margin-left:39px;padding-left:8px}
+html.ad-agent-only .ad-agent-flat-conversations{margin:2px 0 7px 39px;padding-left:8px;border-left:1px solid #dbe4f1}
+html.ad-agent-only .ad-agent-flat-conversations>.ad-agent-expert-chat-row{display:grid;grid-template-columns:minmax(0,1fr) 23px 23px;align-items:center}
 html.ad-agent-only .ad-agent-expert-projects>.ad-agent-expert-project{display:block;margin:2px 0}
 html.ad-agent-only .ad-agent-expert-project-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 23px 23px;align-items:center;border-radius:7px}
 html.ad-agent-only .ad-agent-expert-chat-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 23px 23px;align-items:center;border-radius:7px}

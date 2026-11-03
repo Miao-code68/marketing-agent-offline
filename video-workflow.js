@@ -322,10 +322,10 @@ function vwWhiteRunHTML(run,c){
 }
 function vwPublishChoice(run){
  const decision=run.publishDecision;
- if(decision==='saved')return `<p>项目文件已保留，同时已保存到资产库，可在“资产 → AI 成片库”继续查看和使用。</p>`;
- if(decision==='later')return `<p>已暂不处理，本次成片已自动保存到当前项目文件。后续仍可回复“保存到资产库”或“发布计划”。</p>`;
+ if(decision==='saved')return `<p>会话文件已保留，同时已保存到资产库，可在“资产库 → AI 成片”继续查看和使用。</p>`;
+ if(decision==='later')return `<p>已暂不处理，本次成片已自动保存到当前会话文件。后续仍可回复“保存到资产库”或“发布计划”。</p>`;
  if(decision==='publish')return `<p>${run.publishAssignee?`发布计划已移交给${E(run.publishAssignee)}。`:'已进入发布计划，请继续回复要移交的成员姓名，或回复“我来处理”。'}</p>`;
- return `<p>视频已经生成并自动保存到当前项目文件。请直接回复“保存到资产库”，或回复“发布计划”继续创建发布任务；发布计划也可以移交给指定成员处理。</p>`;
+ return `<p>视频已经生成并自动保存到当前会话文件。请直接回复“保存到资产库”，或回复“发布计划”继续创建发布任务；发布计划也可以移交给指定成员处理。</p>`;
 }
 function vwFinalVideoTitle(run){
  return run.finalTitle||run.result?.title||'这单外卖，拒绝配送';
@@ -711,14 +711,14 @@ function vwLaunchChatChoice(materials=[],userText=''){
 
 async function vwSaveGeneratedVideo(c,run){
  if(!run?.result?.video_url)return;
- if(run.assetId){run.publishDecision='saved';c.messages.push({role:'assistant',text:'这条视频已保存到资产库，可在“资产 → AI 成片库”查看和使用。',time:now()});state.messages=c.messages;vwSave();renderAssistant();toast('保存成功');return;}
+ if(run.assetId){run.publishDecision='saved';c.messages.push({role:'assistant',text:'这条视频已保存到资产库，可在“资产库 → AI 成片”查看和使用。',time:now()});state.messages=c.messages;vwSave();renderAssistant();toast('保存成功');return;}
  try{
   const response=await fetch(run.result.video_url);if(!response.ok)throw Error('成片读取失败');
   const blob=await response.blob(),mediaId=`ai-video-file-${run.localId}`,assetId=`ai-video-${run.localId}`,script=c.videoWorkflow?.selectedScript;
   await inspirationMedia(mediaId,new File([blob],`AI成片-${run.localId}.mp4`,{type:blob.type||'video/mp4'}));
   workspace.generatedMedia??=[];
   workspace.generatedMedia.unshift({id:assetId,origin:'ai-generated',status:'completed',mediaType:'video',mediaId,title:`${script?.title||'视频二创'} · AI 成片`,summary:'由视频二创流程生成并保存的演示成片。',platform:'AI 生成',category:'AI 成片',duration:script?.duration||28,ratio:'竖屏 9:16',created:Date.now(),ownerId:c.ownerId||state.id,demo:true,art:'app'});
-  run.assetId=assetId;run.publishDecision='saved';c.messages.push({role:'assistant',text:'已保存到资产库，可在“资产 → AI 成片库”查看和使用。',time:now()});state.messages=c.messages;vwSave();renderAssistant();toast('保存成功');
+  run.assetId=assetId;run.publishDecision='saved';c.messages.push({role:'assistant',text:'已保存到资产库，可在“资产库 → AI 成片”查看和使用。',time:now()});state.messages=c.messages;vwSave();renderAssistant();toast('保存成功');
  }catch(error){toast(error.message||'保存到资产库失败，请重试');}
 }
 function vwOpenAgentPage(){
