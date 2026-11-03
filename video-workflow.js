@@ -150,14 +150,14 @@ function vwScriptHTML(script,index,run){
 }
 
 const vwBriefPresets=[
- {direction:'游戏社交 · 优先推荐',title:'这步，能教我一下吗？',subtitle:'把游戏失误变成搭子一起玩的笑点',duration:28},
- {direction:'语音社交',title:'你亲口任命的下班监督员',subtitle:'通过兑现小约定表现陪伴',duration:28},
- {direction:'AI伴侣',title:'伞还了，人还没走',subtitle:'借还伞继续角色对话',duration:25}
+ {direction:'游戏社交 · 优先推荐',title:'这步，能教我一下吗？',subtitle:'把游戏失误变成搭子一起玩的笑点',duration:28,audienceMatch:'高度匹配 TT 语音的游戏组队、找搭子用户',deliveryAdvice:'适合 ROI 方向，场景明确、转化链路短'},
+ {direction:'语音社交',title:'你亲口任命的下班监督员',subtitle:'通过兑现小约定表现陪伴',duration:28,audienceMatch:'匹配 TT 语音的陪伴、轻社交与下班场景用户',deliveryAdvice:'适合低成本方向，情绪共鸣强、素材易复用'},
+ {direction:'AI伴侣',title:'伞还了，人还没走',subtitle:'借还伞继续角色对话',duration:25,audienceMatch:'匹配 TT 语音的情绪陪伴与角色互动用户',deliveryAdvice:'适合低成本方向，热点新鲜度高、利于快速测试'}
 ];
 const vwRegeneratedBriefPresets=[
- {direction:'废土生存 · 冲突喜剧',title:'别开！那不是补给箱',subtitle:'误触警报后，搭子把翻车变成共同逃跑',duration:29},
- {direction:'游戏默契 · 反差接梗',title:'撤退路线怎么成了漂移赛',subtitle:'用临时失控测试搭子的行动回应',duration:27},
- {direction:'轻悬疑 · 陪伴感',title:'最后一格电，留给谁',subtitle:'在资源不足时表现愿意留下的选择',duration:26}
+ {direction:'废土生存 · 冲突喜剧',title:'别开！那不是补给箱',subtitle:'误触警报后，搭子把翻车变成共同逃跑',duration:29,audienceMatch:'高度匹配 TT 语音的游戏组队、搭子互动用户',deliveryAdvice:'适合 ROI 方向，游戏冲突强、产品承接直接'},
+ {direction:'游戏默契 · 反差接梗',title:'撤退路线怎么成了漂移赛',subtitle:'用临时失控测试搭子的行动回应',duration:27,audienceMatch:'匹配 TT 语音的游戏搭子与轻喜剧用户',deliveryAdvice:'适合低成本方向，反差笑点便于快速起量'},
+ {direction:'轻悬疑 · 陪伴感',title:'最后一格电，留给谁',subtitle:'在资源不足时表现愿意留下的选择',duration:26,audienceMatch:'匹配 TT 语音的陪伴、关系感需求用户',deliveryAdvice:'适合 ROI 方向，情绪回报清晰、行动意图明确'}
 ];
 function vwBriefMeta(script,index,run){
  if(script.briefMeta)return {...script.briefMeta};
@@ -233,7 +233,7 @@ function vwBriefDetailHTML(script,index,run){
   ]
 }</code></pre><h2>外部参考与覆盖</h2><p>${first?'<a href="https://www.digitaling.com/projects/379511.html" target="_blank" rel="noopener">Columbia×蒋奇明：计划不如现挂 ↗</a>：迁移从计划失误到共同乐趣的行动逻辑，不复用明星人设。':'本提案只继承参考片的结构机制，具体情节、对白和视觉表达均重新创作。'}</p></article>`;
 }
-function vwBriefTableHTML(scripts,run){return `<section class="vw-brief-list"><p>已调用当前文件夹的 skill，生成 ${scripts.length} 份 TT语音信息流素材 Brief，均含故事线、分段脚本、台词、参考依据及制作待办。</p><div class="vw-brief-table"><div class="head"><b>方向</b><b>Brief</b><b>时长</b></div>${scripts.map((script,index)=>{const meta=vwBriefMeta(script,index,run),key=`${run.localId}:${index}`;return `<div class="row"><strong>${E(meta.direction)}</strong><p><button type="button" data-r-action="vw-open-brief" data-id="${E(key)}"><span>▣</span>${E(meta.title)}</button><small>——${E(meta.subtitle)}</small></p><b>${E(meta.duration)}秒</b></div>`;}).join('')}</div><p class="vw-brief-note">当前均为创意草案；点击 Brief 标题查看完整内容。后续制作可直接使用各 Brief 内的脚本与制作约束。</p></section>`;}
+function vwBriefTableHTML(scripts,run){return `<section class="vw-brief-list"><p>已调用当前文件夹的 skill，生成 ${scripts.length} 份 TT语音信息流素材 Brief，均含故事线、分段脚本、台词、参考依据及制作待办。</p><div class="vw-brief-table"><div class="head"><b>方向</b><b>Brief</b><b>推荐理由</b></div>${scripts.map((script,index)=>{const meta=vwBriefMeta(script,index,run),key=`${run.localId}:${index}`,audienceMatch=meta.audienceMatch||'匹配 TT 语音的目标兴趣与社交需求用户',deliveryAdvice=meta.deliveryAdvice||'建议先小预算测试，再根据转化表现选择低成本或 ROI 方向';return `<div class="row"><strong>${E(meta.direction)}</strong><p><button type="button" data-r-action="vw-open-brief" data-id="${E(key)}"><span>▣</span>${E(meta.title)}</button><small>——${E(meta.subtitle)}</small></p><div class="vw-brief-reason"><span><b>用户匹配</b>${E(audienceMatch)}</span><span><b>投放建议</b>${E(deliveryAdvice)}</span></div></div>`;}).join('')}</div><p class="vw-brief-note">当前均为创意草案；点击 Brief 标题查看完整内容。后续制作可直接使用各 Brief 内的脚本与制作约束。</p></section>`;}
 
 const vwWhitePrompt=`【参考素材：已确认的白模视频，作为唯一运动蓝图】
 严格继承白模视频里全部规则，禁止改动：
