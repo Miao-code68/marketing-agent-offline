@@ -50,8 +50,19 @@ async function vwPoll(reference,run){
  }finally{VW.polling.delete(run.id);}
 }
 function vwAnalysisHTML(result,reference,mode='task'){return `<section class="it-analysis"><h3>内容概要</h3><p class="vw-summary">${E(result.summary||'暂无内容概要')}</p><h3>分镜脚本 <small>${result.segments?.length||0} 个分镜</small></h3>${vwStoryboardHTML(result,reference,mode)}</section>`;}
+function vwBreakdownValues(result,label,fallback=[]){const item=(result.content_tags||[]).find(tag=>tag.label===label),values=item?.values?.length?item.values:fallback;return [...new Set((Array.isArray(values)?values:[values]).filter(Boolean))];}
+function vwBreakdownCard(title,values){const tags=(Array.isArray(values)?values:[values]).filter(Boolean);return `<article class="vw-breakdown-card"><small>${E(title)}</small><div>${tags.map(value=>`<span>${E(value)}</span>`).join('')||'<span>待补充</span>'}</div></article>`;}
+function vwBreakdownSection(title,tone,body){return `<section class="vw-breakdown-section ${tone}"><header><i></i><h4>${E(title)}</h4></header>${body}</section>`;}
+function vwInsightBreakdownHTML(result){
+ const segments=result.segments||[],path=result.conversion_path||[],styles=[...new Set(segments.map(item=>item.visual_style||item.visual_language).filter(Boolean))],characters=[...new Set(segments.map(item=>item.character).filter(Boolean))];
+ const narrative=`<div class="vw-breakdown-subgroup"><div class="vw-breakdown-subhead"><b>内容组织</b><span>结构分组</span></div><div class="vw-breakdown-grid">${vwBreakdownCard('内容组织方式',vwBreakdownValues(result,'内容组织',['问题前置','过程推进','结果收束']))}${vwBreakdownCard('叙事节奏',vwBreakdownValues(result,'叙事节奏',['快速进入','层层递进']))}</div></div><div class="vw-breakdown-subgroup"><div class="vw-breakdown-subhead"><b>转化推进</b><span>结构分组</span></div><div class="vw-breakdown-grid">${vwBreakdownCard('前段吸引',path.slice(0,2))}${vwBreakdownCard('中后段承接',path.slice(2))}</div></div>`;
+ const expression=`<div class="vw-breakdown-grid">${vwBreakdownCard('吸引注意',vwBreakdownValues(result,'转化路径',['痛点共鸣','场景切入']))}${vwBreakdownCard('产品介绍',vwBreakdownValues(result,'卖点方式',['过程可视化','结果可感知']))}${vwBreakdownCard('行动引导',path.slice(-2))}${vwBreakdownCard('核心受众',vwBreakdownValues(result,'核心受众',['目标用户']))}</div>`;
+ const audiovisual=`<div class="vw-breakdown-grid">${vwBreakdownCard('镜头表达',vwBreakdownValues(result,'镜头表达',['近景特写','操作切镜']))}${vwBreakdownCard('画面风格',styles.slice(0,3))}${vwBreakdownCard('节奏设计',vwBreakdownValues(result,'节奏设计',['前段紧凑','重点停留']))}${vwBreakdownCard('主角形象',characters.slice(0,2))}</div>`;
+ return `<div class="vw-insight-breakdown">${vwBreakdownSection('叙事结构','tone-teal',narrative)}${vwBreakdownSection('内容表达','tone-amber',expression)}${vwBreakdownSection('视听表现','tone-rose',audiovisual)}</div>`;
+}
 function vwStoryboardHTML(result,reference={},mode='drawer'){
  const segments=result.segments||[];if(!segments.length)return '<div class="ip-empty"><h3>这条视频还没有分镜脚本</h3><p>当前仅展示已有的内容概要。</p></div>';
+ if(mode==='drawer')return vwInsightBreakdownHTML(result);
  return `<div class="vw-shot-list">${segments.map((s,i)=>{const seek=mode==='task'?`data-it="seek" data-time="${Number(s.start)||0}"`:`data-r-action="ip-seek" data-id="${Number(s.start)||0}"`;const visual=reference.poster?`<img src="${E(reference.poster)}" alt="分镜 ${i+1} 缩略图">`:reference.art?`<span class="vw-shot-thumb-art">${inspirationArt(reference)}</span>`:`<span class="vw-shot-placeholder">${String(i+1).padStart(2,'0')}</span>`;return `<article class="vw-shot"><header><i></i><b>分镜${i+1}：${E(s.original)}</b></header><div class="vw-shot-card"><div class="vw-shot-thumb">${visual}<button ${seek} aria-label="播放分镜 ${i+1}">▶</button><time>◷ ${IM.time(s.start)}–${IM.time(s.end)}</time></div><div class="vw-shot-content"><small>分镜提示词</small><p class="vw-shot-prompt">${E(s.prompt||s.original)}</p><dl><div><dt>主角形象</dt><dd>${E(s.character||'待识别')}</dd></div><div><dt>画面风格</dt><dd>${E(s.visual_style||s.visual_language||'待识别')}</dd></div><div><dt>关键画面元素</dt><dd>${E(s.visual_elements||s.attraction||'待识别')}</dd></div></dl></div></div></article>`;}).join('')}</div>`;
 }
 function vwDrawAnalysis(c){
@@ -60,7 +71,7 @@ function vwDrawAnalysis(c){
  const host=$('#ip-segments');if(!host)return;
  const run=entry.run;
  if(run.localAnalysis&&run.result&&!run.result.segments?.[0]?.character){run.result=vwLocalAnalysisResult(c);vwSave();}
- const heading=ipDrawer.querySelector('[data-ip-detail-panel="storyboard"] .ip-breakdown-heading h3');if(heading)heading.innerHTML=`脚本拆解 <small>${run.result?.segments?.length||0} 个时间段</small>`;
+ const heading=ipDrawer.querySelector('[data-ip-detail-panel="storyboard"] .ip-breakdown-heading h3');if(heading)heading.textContent='脚本拆解';
  const summary=ipDrawer.querySelector('#ip-summary');if(summary&&run.result?.summary)summary.textContent=run.result.summary;
  host.innerHTML=`<section class="vw-analysis">${run.result?vwStoryboardHTML(run.result,c,'drawer'):''}${vwBusy(run)?`<p role="status" class="vw-progress"><i></i>${E(run.message)}</p>`:!run.result?`<p role="alert">${E(run.message)}</p>`:''}${run.connectionError?`<p role="alert">${E(run.connectionError)}</p>${vwButton('vw-analysis-resume','重新连接',c.id)}`:''}${['failed','interrupted'].includes(run.status)?vwButton('vw-analyze','重新拆解',c.id):''}</section>`;
 }
