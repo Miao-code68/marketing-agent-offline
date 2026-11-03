@@ -98,7 +98,7 @@
         ${taskRows}
       </section>
       <section class="ad-agent-side-section ad-agent-expert-section">
-        <div class="ad-agent-side-label"><span>专家</span><button type="button" data-r-action="wb-new-expert" aria-label="新建专家">＋</button></div>
+        <div class="ad-agent-side-label"><span>专家</span></div>
         ${expertRows}
       </section>
     `;
