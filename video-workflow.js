@@ -322,10 +322,10 @@ function vwWhiteRunHTML(run,c){
 }
 function vwPublishChoice(run){
  const decision=run.publishDecision;
- if(decision==='saved')return `<p>会话文件已保留，同时已保存到资产库，可在“资产库 → AI 成片”继续查看和使用。</p>`;
+ if(decision==='saved')return `<button type="button" class="vw-asset-saved" data-r-action="vw-open-assets"><span>✓</span><b>已保存至资产库，点击查看</b><i>↗</i></button>`;
  if(decision==='later')return `<p>已暂不处理，本次成片已自动保存到当前会话文件。后续仍可回复“保存到资产库”或“发布计划”。</p>`;
  if(decision==='publish')return `<p>${run.publishAssignee?`发布计划已移交给${E(run.publishAssignee)}。`:'已进入发布计划，请继续回复要移交的成员姓名，或回复“我来处理”。'}</p>`;
- return `<p>视频已经生成并自动保存到当前会话文件。请直接回复“保存到资产库”，或回复“发布计划”继续创建发布任务；发布计划也可以移交给指定成员处理。</p>`;
+ return `<div class="vw-save-guide"><div><b>将这条成片保存到资产库</b><span>保存后可在“资产库 → AI 成片”继续查看和使用。</span></div><button type="button" data-r-action="vw-save-video" data-id="${E(run.localId)}">保存到资产库</button></div>`;
 }
 function vwFinalVideoTitle(run){
  return run.finalTitle||run.result?.title||'这单外卖，拒绝配送';
@@ -362,8 +362,8 @@ function vwStageReviewHTML(message){
 function vwSampleReviewHTML(){
  return `<div class="vw-response vw-sample-review"><div class="vw-agent-label">${icon('spark')} 视频验收 Agent</div><p class="vw-sample-time">用时 8 分钟 38 秒 <span>›</span></p><h3>样片已生成，约 29.06 秒，画幅和音轨检查通过。</h3><button type="button" class="vw-document-link" data-r-action="vw-open-sample"><span>▣</span> 点击观看样片</button><p><b>画面抽查发现：</b>桶先竖放、两人用桶颜色互换，滚动时两桶出现融合。声音与完整动态效果尚未核实，因此这版暂不判为合格终片。</p><p>已唤起处理选项，建议先修改滚桶动作方案。按 <button type="button" class="vw-inline-skill" data-r-action="vw-open-video-acceptance">▣ 视频验收 Skill</button>“内容、声音、动作任一关键项不合格则暂停”的要求，目前未自动付费重做。</p></div>`;
 }
-function vwAutomaticResultHTML(){
- return `<div class="vw-response vw-sample-review vw-auto-result"><div class="vw-agent-label">${icon('spark')} 视频制作 Agent</div><p class="vw-sample-time">用时 10 分钟 38 秒 <span>›</span></p><h3>已按全自动方式重新生成并完成检查，上一版已保留。</h3><button type="button" class="vw-document-link" data-r-action="vw-open-final-video"><span>▣</span> 查看新版本视频《这单外卖，拒绝配送》</button><p>约 29 秒 · 竖屏 480p · 有声无配乐。两桶独立滚动，主要对白及品牌收口完整；开箱造型、入桶方式和镜头时点与提示词仍有细节差异。</p></div>`;
+function vwAutomaticResultHTML(run){
+ return `<div class="vw-response vw-sample-review vw-auto-result"><div class="vw-agent-label">${icon('spark')} 视频制作 Agent</div><p class="vw-sample-time">用时 10 分钟 38 秒 <span>›</span></p><h3>已按全自动方式重新生成并完成检查，上一版已保留。</h3><button type="button" class="vw-document-link" data-r-action="vw-open-generated-video" data-id="${E(run.localId)}"><span>▣</span> 查看新版本视频《${E(vwFinalVideoTitle(run))}》</button><p>约 29 秒 · 竖屏 480p · 有声无配乐。两桶独立滚动，主要对白及品牌收口完整；开箱造型、入桶方式和镜头时点与提示词仍有细节差异。</p>${vwPublishChoice(run)}</div>`;
 }
 function vwRunHTML(run,c){
  if(run.whiteModel)return vwWhiteRunHTML(run,c);
@@ -411,7 +411,7 @@ renderAssistant=function(){
   if(m.videoReadonlyResult){el.classList.add('vw-rich-message');el.innerHTML=vwReadonlyResultHTML();}
   if(m.videoStageReview){el.classList.add('vw-rich-message');el.innerHTML=vwStageReviewHTML(m);}
   if(m.videoSampleReview){el.classList.add('vw-rich-message');el.innerHTML=vwSampleReviewHTML();}
- if(m.videoAutomaticResult){el.classList.add('vw-rich-message');el.innerHTML=vwAutomaticResultHTML();}
+ if(m.videoAutomaticResult){let run=flow.runs.find(item=>item.localId===m.videoAutomaticResult)||vwLatestGeneratedRun(flow);if(!run){run=vwNewRun('generate-auto','视频已经生成并完成检查。');Object.assign(run,{status:'completed',skillName:'视频制作 Agent',finalTitle:'这单外卖，拒绝配送',result:{summary:'',segments:[],scripts:[],questions:[],project_url:'',video_url:'./demo-wasteland-sample.mp4',task_ids:[]}});flow.runs.push(run);m.videoAutomaticResult=run.localId;vwSave();}el.classList.add('vw-rich-message');el.innerHTML=vwAutomaticResultHTML(run);}
  });
  const composer=$('#composer'),composerArea=composer?.closest('.composer-area');composerArea?.querySelector('#vw-native-question-panel')?.remove();composerArea?.classList.remove('vw-native-question-active');
  const nativeQuestion=vwNativeQuestionPanel(flow);if(nativeQuestion&&composer){composer.insertAdjacentHTML('beforebegin',nativeQuestion);composerArea?.classList.add('vw-native-question-active');const input=$('#vw-native-question-input'),sendQuestion=()=>R.actions['vw-native-question-send']?.();input?.addEventListener('input',()=>{$('#vw-native-question-panel [data-r-action="vw-native-question-send"]').disabled=!input.value.trim();});input?.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendQuestion();}});}
@@ -523,7 +523,7 @@ function vwLaunchStaged(c,text='按阶段验收制作'){
  vwMarkProductionMethod(c,'staged');c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'',time:now(),videoStageReview:true});c.draft='';c.videoWorkflow.mode='stage-review';state.messages=c.messages;vwSave();renderAssistant();vwOpenMetarealmCanvas();setTimeout(()=>$('#assistant-body .vw-stage-review:last-child')?.scrollIntoView({behavior:'smooth',block:'start'}),0);
 }
 function vwLaunchAutomatic(c,text='全自动制作直到交付终片'){
- vwMarkProductionMethod(c,'auto');const method=vwLatestMessage(c,'videoProductionMethod');if(method)method.productionMethod='auto';c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'',time:now(),videoAutomaticResult:true});c.draft='';c.videoWorkflow.mode='automatic-complete';state.messages=c.messages;vwSave();renderAssistant();setTimeout(()=>$('#assistant-body .vw-auto-result:last-child')?.scrollIntoView({behavior:'smooth',block:'start'}),0);
+ vwMarkProductionMethod(c,'auto');const method=vwLatestMessage(c,'videoProductionMethod');if(method)method.productionMethod='auto';const run=vwNewRun('generate-auto','视频已经生成并完成检查。');Object.assign(run,{status:'completed',skillName:'视频制作 Agent',finalTitle:c.videoWorkflow?.selectedScript?.title||'这单外卖，拒绝配送',result:{summary:'',segments:[],scripts:[],questions:[],project_url:'',video_url:'./demo-wasteland-sample.mp4',task_ids:[]}});c.videoWorkflow.runs.push(run);c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'',time:now(),videoAutomaticResult:run.localId});c.draft='';c.videoWorkflow.mode='automatic-complete';state.messages=c.messages;vwSave();renderAssistant();setTimeout(()=>$('#assistant-body .vw-auto-result:last-child')?.scrollIntoView({behavior:'smooth',block:'start'}),0);
 }
 function vwHandleProductionMethod(c,text){if(/只读|评估|不执行|^[\s]*3[\s]*$/.test(text))return vwLaunchReadonly(c,text);if(/阶段|验收|^[\s]*2[\s]*$/.test(text))return vwLaunchStaged(c,text);if(/全自动|自动制作|交付终片|^[\s]*1[\s]*$/.test(text))return vwLaunchAutomatic(c,text);c.messages.push({role:'user',text,time:now()},{role:'assistant',text:'请选择“全自动制作”“按阶段验收”或“仅做只读评估”。',time:now()});c.draft='';state.messages=c.messages;vwSave();renderAssistant();}
 R.invoke('vw-select-production-method',button=>{const c=chat();if(c.videoWorkflow?.mode!=='production-method')return;const actions={auto:vwLaunchAutomatic,staged:vwLaunchStaged,readonly:vwLaunchReadonly};actions[button.dataset.id]?.(c,button.dataset.id==='auto'?'全自动制作直到交付终片':button.dataset.id==='staged'?'按阶段验收制作':'仅做只读评估，不执行生成');});
@@ -553,7 +553,11 @@ const vwWhiteLibrary=document.createElement('dialog');vwWhiteLibrary.id='vw-whit
 const vwBriefDrawer=document.createElement('dialog');vwBriefDrawer.id='vw-brief-drawer';vwBriefDrawer.setAttribute('aria-label','Brief 详情');document.body.append(vwBriefDrawer);
 const vwProductionDrawer=document.createElement('dialog');vwProductionDrawer.id='vw-production-drawer';vwProductionDrawer.setAttribute('aria-label','视频制作详情');document.body.append(vwProductionDrawer);
 const vwSampleDrawer=document.createElement('dialog');vwSampleDrawer.id='vw-sample-drawer';vwSampleDrawer.setAttribute('aria-label','样片预览');document.body.append(vwSampleDrawer);
+const vwAssetToast=document.createElement('button');vwAssetToast.id='vw-asset-saved-toast';vwAssetToast.type='button';vwAssetToast.dataset.rAction='vw-open-assets';vwAssetToast.hidden=true;vwAssetToast.innerHTML='<span>✓</span><b>已保存至资产库，点击查看</b><i>↗</i>';document.body.append(vwAssetToast);
 const vwCanvasDrawer=document.createElement('dialog');vwCanvasDrawer.id='vw-canvas-drawer';vwCanvasDrawer.setAttribute('aria-label','元境制作画布');document.body.append(vwCanvasDrawer);
+function vwShowAssetSaved(){vwAssetToast.hidden=false;clearTimeout(vwShowAssetSaved.timer);vwShowAssetSaved.timer=setTimeout(()=>vwAssetToast.hidden=true,4500);}
+function vwOpenSavedAssets(){vwAssetToast.hidden=true;if(vwSampleDrawer.open)vwSampleDrawer.close();WB.assetTab='finished';WB.assetFolder='all';WB.assetSubfolder='all';WB.assetQuery='';wbAgentOpen('assets');}
+vwAssetToast.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();vwOpenSavedAssets();});
 function vwEvaluationDocument(){return `<article class="vw-production-document"><header><small>READ-ONLY ASSESSMENT</small><h1>《这单外卖，拒绝配送》只读评估</h1><div><span>结构预检通过</span><span>未执行生成</span><span>本轮不扣费</span></div></header><h2>结论</h2><p><b>制作清单结构预检通过，模型权限与所选规格可用；完整费用尚不可确定。</b></p><p><strong>用户范围：</strong>仅做只读评估；时长 29 秒。未创建元境项目、上传、送检或提交生成任务，本轮报价不扣费。</p><h2>内容与规格核对</h2><dl><div><dt>内容核对</dt><dd>4 张参考图与 1 条视频的完整节点提示词，逐字匹配已评审 v2。总提示词中的 28 秒按用户“29s”确认恢复为 29 秒，评估副本保存于 confirmed-total-prompt.txt，原编辑文件保留。</dd></div><div><dt>规格</dt><dd>29 秒单段，9:16，480p，MP4，有对白与音效，无 BGM。</dd></div><div><dt>参考图</dt><dd>两张 1536×1024 人物身份板，两张 720×1280 剧情／品牌卡；medium、1k、PNG。</dd></div><div><dt>预检</dt><dd>ok=true，warnings=[]，4 个图片节点、1 个视频节点、无合并节点、唯一终点。preflight.json 记录完整生效参数。</dd></div><div><dt>权限</dt><dd>GPT Image 2（2048641530790625280）、Seedance 2.5（2069627175121215489）、方舟素材检测（2039632435694166016）均在当前可访问列表，动态配置读取成功。</dd></div></dl><h2>费用</h2><table><thead><tr><th>项目</th><th>当前参考报价</th></tr></thead><tbody><tr><td>小林身份板</td><td>0.25 CNY</td></tr><tr><td>搭子身份板</td><td>0.25 CNY</td></tr><tr><td>剧情聊天卡</td><td>0.25 CNY</td></tr><tr><td>品牌收尾卡</td><td>0.25 CNY</td></tr></tbody></table><p>以上为四项独立参考报价，不是全片总价或最终价格上限。每项服务端提示“输入图片需额外计费”；当前四张均为无输入图片的原创生成。</p><div class="vw-report-callout"><b>视频与检测尚未报价</b><p>视频需要 4 张真实参考图，生成后须逐张完成方舟检测，再用成功资产参数预估视频。当前无图片 URL 和检测资产 ID，不使用占位素材，也不省略参考图冒报纯文生视频价格。检测通常对应 4 张独立图片，当前未提交任何检测。</p></div><h2>后续验收重点</h2><p>双人钻桶、蹬地和收腿的物理连贯；短时间中文图卡可读性；双男声区分、对白时长与独立品牌女声。模型规格可用与结构预检通过不保证生成成品通过内容验收。</p><p>后续若明确授权制作，先重新核对当前配置和费用，再按确认版建立项目和执行；本轮到评估交付结束。</p></article>`;}
 function vwReferenceSkillDocument(){return `<article class="vw-production-document vw-skill-document"><header><small>WORKFLOW REFERENCE</small><h1>第五阶段：素材与参考图</h1><p>metarealm-reference-generation · 按阶段验收</p></header><p>这一页用于解释本次按阶段验收时，参考图如何进入后续视频制作。页面中的规则是制作流程说明，不会替代当前对话中已经确认的脚本与范围。</p><h2>素材和身份关卡</h2><p>本地图片会先检查尺寸；不合规时生成临时适配文件，不覆盖原图。人物身份板、场景、商品与关键道具分别承担明确职责，只有检查通过的参考图才进入下游视频节点。</p><h2>本轮 4 张参考图的职责</h2><table><thead><tr><th>参考图</th><th>锁定内容</th><th>后续用途</th></tr></thead><tbody><tr><td>小林人物身份板</td><td>成年拾荒者外形、服装和身份标识</td><td>锁定主角一致性</td></tr><tr><td>搭子人物身份板</td><td>搭子外形、服装与角色区分</td><td>锁定双人镜头身份</td></tr><tr><td>剧情聊天卡</td><td>“组队前”关系交代与对白</td><td>短回叙图卡</td></tr><tr><td>品牌收尾卡</td><td>TT语音品牌与行动引导</td><td>片尾落版</td></tr></tbody></table><h2>按阶段验收</h2><ol><li>生成并下载本轮参考图，分别检查人物、肢体、服装、画幅、关键道具与中文文字。</li><li>把实际图片与已确认的人物设定、脚本和来源并排核对。</li><li>全部合格后才进入视频生成；发现关键偏差时停在当前阶段，说明受影响节点并等待调整。</li><li>参考图确认后，再核对持久化 Prompt、模型参数与实际注入来源。</li></ol><div class="vw-report-callout"><b>当前状态</b><p>4 张参考图已完成尺寸检查，正在等待本轮人工确认。确认不会改变已定稿的故事和对白。</p></div></article>`;}
 function vwVideoAcceptanceDocument(){return `<article class="vw-production-document vw-skill-document"><header><small>VIDEO ACCEPTANCE</small><h1>视频验收 Skill</h1><p>样片内容、声音与动作检查</p></header><p>对生成样片分别核对画幅、人物身份、关键动作、声音、文字与品牌收尾。任一关键项无法核实或不合格时，暂停当前制作链路并说明问题，不自动发起付费重做。</p><h2>本轮验收结果</h2><table><thead><tr><th>检查项</th><th>结论</th></tr></thead><tbody><tr><td>时长与画幅</td><td>29.06 秒，9:16，通过</td></tr><tr><td>音轨</td><td>音轨存在，完整声音效果待人工核实</td></tr><tr><td>人物与道具</td><td>桶颜色互换，人物身份延续需复核</td></tr><tr><td>关键动作</td><td>滚动时两桶融合，未通过</td></tr></tbody></table><div class="vw-report-callout"><b>处理状态</b><p>当前样片暂停在验收节点，建议先修改滚桶动作方案；尚未自动发起重做或产生新的生成费用。</p></div></article>`;}
@@ -562,7 +566,7 @@ function vwOpenSampleDrawer(finalVideo=false){vwSampleDrawer.innerHTML=`<div cla
 function vwOpenGeneratedVideo(run){
  if(!run?.result?.video_url)return;
  const title=vwFinalVideoTitle(run);
- vwSampleDrawer.innerHTML=`<div class="vw-sample-drawer-shell"><header><div><small>FINAL VIDEO</small><b>《${E(title)}》最终成片</b></div><button type="button" data-r-action="vw-close-sample" aria-label="关闭视频">×</button></header><main><video controls playsinline preload="metadata" src="${E(run.result.video_url)}" aria-label="${E(title)}最终成片"></video><p>约 29 秒 · 9:16 · 480p · 有声</p></main></div>`;
+ vwSampleDrawer.innerHTML=`<div class="vw-sample-drawer-shell"><header><div><small>FINAL VIDEO</small><b>《${E(title)}》最终成片</b></div><div class="vw-video-head-actions"><details class="vw-video-more"><summary aria-label="视频更多操作">•••</summary><div><button type="button" data-r-action="vw-download-generated-video" data-id="${E(run.localId)}">下载到本地</button><button type="button" data-r-action="vw-save-video" data-id="${E(run.localId)}" ${run.assetId?'disabled':''}>${run.assetId?'已保存到资产库':'保存到资产库'}</button></div></details><button type="button" data-r-action="vw-close-sample" aria-label="关闭视频">×</button></div></header><main><video controls playsinline preload="metadata" src="${E(run.result.video_url)}" aria-label="${E(title)}最终成片"></video><p>约 29 秒 · 9:16 · 480p · 有声</p></main></div>`;
  if(!vwSampleDrawer.open)vwSampleDrawer.show();
 }
 function vwOpenMetarealmCanvas(){
@@ -711,16 +715,18 @@ function vwLaunchChatChoice(materials=[],userText=''){
 
 async function vwSaveGeneratedVideo(c,run){
  if(!run?.result?.video_url)return;
- if(run.assetId){run.publishDecision='saved';c.messages.push({role:'assistant',text:'这条视频已保存到资产库，可在“资产库 → AI 成片”查看和使用。',time:now()});state.messages=c.messages;vwSave();renderAssistant();toast('保存成功');return;}
+ if(run.assetId){run.publishDecision='saved';state.messages=c.messages;vwSave();renderAssistant();if(vwSampleDrawer.open)vwOpenGeneratedVideo(run);vwShowAssetSaved();return;}
  try{
   const response=await fetch(run.result.video_url);if(!response.ok)throw Error('成片读取失败');
   const blob=await response.blob(),mediaId=`ai-video-file-${run.localId}`,assetId=`ai-video-${run.localId}`,script=c.videoWorkflow?.selectedScript;
   await inspirationMedia(mediaId,new File([blob],`AI成片-${run.localId}.mp4`,{type:blob.type||'video/mp4'}));
   workspace.generatedMedia??=[];
   workspace.generatedMedia.unshift({id:assetId,origin:'ai-generated',status:'completed',mediaType:'video',mediaId,title:`${script?.title||'视频二创'} · AI 成片`,summary:'由视频二创流程生成并保存的演示成片。',platform:'AI 生成',category:'AI 成片',duration:script?.duration||28,ratio:'竖屏 9:16',created:Date.now(),ownerId:c.ownerId||state.id,demo:true,art:'app'});
-  run.assetId=assetId;run.publishDecision='saved';c.messages.push({role:'assistant',text:'已保存到资产库，可在“资产库 → AI 成片”查看和使用。',time:now()});state.messages=c.messages;vwSave();renderAssistant();toast('保存成功');
+  workspace.assetLibrary??=[];const mode=c.videoWorkflow?.whiteModelFlow?'视频复刻':'视频二创',title=vwFinalVideoTitle(run);if(!workspace.assetLibrary.some(item=>item.id===assetId))workspace.assetLibrary.unshift({id:assetId,kind:'finished',name:`${title}.mp4`,format:'MP4',meta:'来自会话',creator:'视频制作 Agent',created:'刚刚',hue:218,mediaId,tags:['AI 成片',mode,'已完成']});
+  run.assetId=assetId;run.publishDecision='saved';state.messages=c.messages;vwSave();renderAssistant();if(vwSampleDrawer.open)vwOpenGeneratedVideo(run);vwShowAssetSaved();
  }catch(error){toast(error.message||'保存到资产库失败，请重试');}
 }
+async function vwDownloadGeneratedVideo(run){if(!run?.result?.video_url)return;const title=vwFinalVideoTitle(run).replace(/[\\/:*?"<>|]/g,'-');try{const response=await fetch(run.result.video_url);if(!response.ok)throw Error();const blob=await response.blob(),url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;anchor.download=`${title}.mp4`;anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{const anchor=document.createElement('a');anchor.href=run.result.video_url;anchor.download=`${title}.mp4`;anchor.target='_blank';anchor.click();}}
 function vwOpenAgentPage(){
  if(!document.documentElement.classList.contains('insights-only'))return false;
  const target=new URL('ad-agent.html',location.href);target.search=location.search;target.searchParams.delete('from');target.hash='ad-agent';location.assign(target.href);return true;
@@ -767,6 +773,8 @@ R.invoke('vw-close-production-drawer',()=>vwProductionDrawer.close());
 R.invoke('vw-open-sample',()=>vwOpenSampleDrawer());
 R.invoke('vw-open-final-video',()=>vwOpenSampleDrawer(true));
 R.invoke('vw-open-generated-video',b=>{const c=chat(),run=c.videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);vwOpenGeneratedVideo(run);});
+R.invoke('vw-download-generated-video',b=>{const run=chat().videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);vwDownloadGeneratedVideo(run);});
+R.invoke('vw-open-assets',vwOpenSavedAssets);
 R.invoke('vw-close-sample',()=>vwSampleDrawer.close());
 R.invoke('vw-close-canvas',()=>vwCanvasDrawer.close());
 R.invoke('vw-stage-confirm',()=>vwConfirmStage(chat()));
@@ -776,5 +784,5 @@ R.invoke('vw-material-confirm',()=>{if(VRS.materials.size<3)return toast('混剪
 R.invoke('vw-save-video',b=>{const c=chat(),run=c.videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);vwSaveGeneratedVideo(c,run);});
 R.invoke('vw-publish-later',b=>{const c=chat(),run=c.videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);if(!run?.result?.video_url)return;run.publishDecision='later';vwSave();renderAssistant();});
 R.invoke('vw-publish-video',b=>{const c=chat(),run=c.videoWorkflow?.runs.find(item=>item.localId===b.dataset.id);if(!run?.result?.video_url)return;run.publishDecision='publish';vwSave();if(typeof window.apfOpenGeneratedPublish==='function')window.apfOpenGeneratedPublish({id:`generated-${run.localId}`,title:'刚刚生成的视频',kind:'视频',tone:'blue',url:run.result.video_url});else toast('智能投放流程正在加载，请稍后再试');});
-vwRemakeStudio.addEventListener('click',event=>{if(event.target===vwRemakeStudio)vwRemakeStudio.close();});vwMaterialDrawer.addEventListener('click',event=>{if(event.target===vwMaterialDrawer)vwMaterialDrawer.close();});vwWhiteLibrary.addEventListener('click',event=>{if(event.target===vwWhiteLibrary)vwWhiteLibrary.close();});vwBriefDrawer.addEventListener('click',event=>{if(event.target===vwBriefDrawer)vwBriefDrawer.close();});vwProductionDrawer.addEventListener('click',event=>{if(event.target===vwProductionDrawer)vwProductionDrawer.close();});vwSampleDrawer.addEventListener('click',event=>{if(event.target===vwSampleDrawer)vwSampleDrawer.close();});vwCanvasDrawer.addEventListener('click',event=>{if(event.target===vwCanvasDrawer)vwCanvasDrawer.close();});
+vwRemakeStudio.addEventListener('click',event=>{if(event.target===vwRemakeStudio)vwRemakeStudio.close();});vwMaterialDrawer.addEventListener('click',event=>{if(event.target===vwMaterialDrawer)vwMaterialDrawer.close();});vwWhiteLibrary.addEventListener('click',event=>{if(event.target===vwWhiteLibrary)vwWhiteLibrary.close();});vwBriefDrawer.addEventListener('click',event=>{if(event.target===vwBriefDrawer)vwBriefDrawer.close();});vwProductionDrawer.addEventListener('click',event=>{if(event.target===vwProductionDrawer)vwProductionDrawer.close();});vwSampleDrawer.addEventListener('click',event=>{const button=event.target.closest?.('.vw-video-more [data-r-action]');if(button){event.preventDefault();event.stopPropagation();const run=chat().videoWorkflow?.runs.find(item=>item.localId===button.dataset.id);if(button.dataset.rAction==='vw-save-video')vwSaveGeneratedVideo(chat(),run);if(button.dataset.rAction==='vw-download-generated-video')vwDownloadGeneratedVideo(run);return;}if(event.target===vwSampleDrawer)vwSampleDrawer.close();});vwCanvasDrawer.addEventListener('click',event=>{if(event.target===vwCanvasDrawer)vwCanvasDrawer.close();});
 renderAssistant();
