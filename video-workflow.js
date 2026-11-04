@@ -325,15 +325,14 @@ function vwPublishChoice(run){
  if(decision==='saved')return `<p class="vw-asset-saved"><span>✓</span>已保存至资产库，<button type="button" data-r-action="vw-open-assets">点击查看 ↗</button></p>`;
  if(decision==='later')return `<p>已暂不处理，本次成片已自动保存到当前会话文件。后续仍可回复“保存到资产库”或“发布计划”。</p>`;
  if(decision==='publish')return `<p>${run.publishAssignee?`发布计划已移交给${E(run.publishAssignee)}。`:'已进入发布计划，请继续回复要移交的成员姓名，或回复“我来处理”。'}</p>`;
- return `<p class="vw-save-tip">可直接保存到本地或资产库；播放器右上角“•••”也提供相同操作。</p>`;
+ return `<p class="vw-save-tip">打开视频后，鼠标悬浮播放器右上角“•••”，可保存到本地或资产库。</p>`;
 }
-function vwGeneratedActionButtons(run){return `<div class="vw-generated-actions"><button type="button" data-r-action="vw-download-generated-video" data-id="${E(run.localId)}"><span aria-hidden="true">↓</span>保存到本地</button><button type="button" class="solid" data-r-action="vw-save-video" data-id="${E(run.localId)}" ${run.assetId?'disabled':''}>${icon('folder')}${run.assetId?'已保存到资产库':'保存到资产库'}</button></div>`;}
 function vwFinalVideoTitle(run){
  return run.finalTitle||run.result?.title||'这单外卖，拒绝配送';
 }
 function vwGeneratedVideoResultHTML(run){
  const title=vwFinalVideoTitle(run),newVersion=(run.generationRound||0)>1||run.regenerated;
- return `<div class="vw-final-video-result"><p>${newVersion?'已按要求重新生成并完成检查，上一版已保留。':'复刻视频已生成并完成检查，当前版本已保留为最终成片。'}</p><button type="button" class="vw-document-link" data-r-action="vw-open-generated-video" data-id="${E(run.localId)}"><span>▣</span> ${newVersion?'查看新版本视频':'查看最终视频'}《${E(title)}》</button><p>约 29 秒 · 竖屏 480p · 有声，与当前确认的制作版本一致。</p>${vwGeneratedActionButtons(run)}${vwPublishChoice(run)}</div>`;
+ return `<div class="vw-final-video-result"><p>${newVersion?'已按要求重新生成并完成检查，上一版已保留。':'复刻视频已生成并完成检查，当前版本已保留为最终成片。'}</p><button type="button" class="vw-document-link" data-r-action="vw-open-generated-video" data-id="${E(run.localId)}"><span>▣</span> ${newVersion?'查看新版本视频':'查看最终视频'}《${E(title)}》</button><p>约 29 秒 · 竖屏 480p · 有声，与当前确认的制作版本一致。</p>${vwPublishChoice(run)}</div>`;
 }
 function vwBriefRevisionHTML(run){
  const script=run.result?.scripts?.[0],key=`${run.localId}:0`;if(!script)return '';
@@ -364,7 +363,7 @@ function vwSampleReviewHTML(){
  return `<div class="vw-response vw-sample-review"><div class="vw-agent-label">${icon('spark')} 视频验收 Agent</div><p class="vw-sample-time">用时 8 分钟 38 秒 <span>›</span></p><h3>样片已生成，约 29.06 秒，画幅和音轨检查通过。</h3><button type="button" class="vw-document-link" data-r-action="vw-open-sample"><span>▣</span> 点击观看样片</button><p><b>画面抽查发现：</b>桶先竖放、两人用桶颜色互换，滚动时两桶出现融合。声音与完整动态效果尚未核实，因此这版暂不判为合格终片。</p><p>已唤起处理选项，建议先修改滚桶动作方案。按 <button type="button" class="vw-inline-skill" data-r-action="vw-open-video-acceptance">▣ 视频验收 Skill</button>“内容、声音、动作任一关键项不合格则暂停”的要求，目前未自动付费重做。</p></div>`;
 }
 function vwAutomaticResultHTML(run){
- return `<div class="vw-response vw-sample-review vw-auto-result"><div class="vw-agent-label">${icon('spark')} 视频制作 Agent</div><p class="vw-sample-time">用时 10 分钟 38 秒 <span>›</span></p><h3>已按全自动方式重新生成并完成检查，上一版已保留。</h3><button type="button" class="vw-document-link" data-r-action="vw-open-generated-video" data-id="${E(run.localId)}"><span>▣</span> 查看新版本视频《${E(vwFinalVideoTitle(run))}》</button><p>约 29 秒 · 竖屏 480p · 有声无配乐。两桶独立滚动，主要对白及品牌收口完整；开箱造型、入桶方式和镜头时点与提示词仍有细节差异。</p>${vwGeneratedActionButtons(run)}${vwPublishChoice(run)}</div>`;
+ return `<div class="vw-response vw-sample-review vw-auto-result"><div class="vw-agent-label">${icon('spark')} 视频制作 Agent</div><p class="vw-sample-time">用时 10 分钟 38 秒 <span>›</span></p><h3>已按全自动方式重新生成并完成检查，上一版已保留。</h3><button type="button" class="vw-document-link" data-r-action="vw-open-generated-video" data-id="${E(run.localId)}"><span>▣</span> 查看新版本视频《${E(vwFinalVideoTitle(run))}》</button><p>约 29 秒 · 竖屏 480p · 有声无配乐。两桶独立滚动，主要对白及品牌收口完整；开箱造型、入桶方式和镜头时点与提示词仍有细节差异。</p>${vwPublishChoice(run)}</div>`;
 }
 function vwRunHTML(run,c){
  if(run.whiteModel)return vwWhiteRunHTML(run,c);
