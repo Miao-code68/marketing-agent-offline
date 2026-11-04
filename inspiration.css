@@ -115,3 +115,6 @@
 /* Keep the platform and video category labels together. */
 .ip-cover-badges{position:absolute;z-index:6;top:11px;left:11px;display:flex;align-items:center;gap:7px;max-width:calc(100% - 22px)}.ip-cover-badges .ip-platform-badge,.ip-cover-badges .ip-video-category-badge{position:static;transform:none;flex:none}.ip-cover-badges .ip-video-category-badge{max-width:calc(100% - 50px)}@media(max-width:600px){.ip-cover-badges{top:7px;left:7px;gap:5px;max-width:calc(100% - 14px)}}
 .ip-cover-badges .ip-video-category-badge{max-width:100px}
+
+/* A selected trend resolves to its four hottest videos and sends each card directly into video creation. */
+.ip-trend-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.ip-trend-direct-card .ip-card-actions>button{background:#356fe0d9}.ip-trend-direct-card .ip-card-actions svg{stroke-width:1.8}@media(max-width:1100px){.ip-trend-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.ip-trend-card-grid{grid-template-columns:1fr}}
