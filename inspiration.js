@@ -147,10 +147,10 @@ function ipTrendRows(){
 }
 function ipTrendCloud(rows,type){return `<div class="ip-trend-cloud" style="--trend:${type.color};--trend-soft:${type.soft}" aria-label="${type.label}词云">${rows.map((r,i)=>`<button data-r-action="ip-trend-word" data-id="${E(r.word)}" class="${IS.trendKeyword===r.word||(!IS.trendKeyword&&i===0)?'active':''}" style="--size:${15+Math.round(r.score/9)}px;--delay:${i*18}ms" aria-pressed="${IS.trendKeyword===r.word||(!IS.trendKeyword&&i===0)}">${E(r.word)}</button>`).join('')}</div>`;}
 function ipTrendTopFive(rows){
- const word=IS.trendKeyword||rows[0].word,references=ipAllReferences(),titles=[`“${word}”为什么突然火了`,`全网都在用“${word}”，高热版本合集`,`“${word}”场景化演绎，评论区热度第一`,`从跟拍到二创：“${word}”的高赞用法`];
+ const word=IS.trendKeyword||rows[0].word,references=ipAllReferences(),titles=[`“${word}”为什么突然火了`,`全网都在用“${word}”，高热版本合集`,`“${word}”场景化演绎，评论区热度第一`TOP 3 CONTENT];T
  const used=new Set();ipTrendSamples=titles.map((title,index)=>{const kind='video';let source=references.find(row=>!used.has(row.id)&&row.mediaType===kind&&row.platform===IS.trendPlatform)||references.find(row=>!used.has(row.id)&&row.mediaType===kind)||references.find(row=>!used.has(row.id))||references[index%references.length]||{};if(source.id)used.add(source.id);return {...source,id:`trend-${IS.trendPlatform||'all'}-${encodeURIComponent(word)}-${index}`,title,platform:IS.trendPlatform||source.platform||'抖音',mediaType:kind,category:'热点视频',summary:`围绕“${word}”的高热内容样本，通过具体场景、人物行动和结果变化完整呈现主题。`,postText:`围绕热梗“${word}”展开的高热视频，适合直接参考其开头、场景和节奏进行视频二创。`,userScene:index%2?'对当前热点敏感、喜欢剧情演绎的兴趣用户':'喜欢轻量热点内容的泛内容用户',demo:true,trendResult:true,trendRank:index+1,art:source.art||['commute','app','bottle','game'][index],mediaId:source.mediaId,poster:source.poster,segments:source.segments||[],publishedAt:'2026/10/30',likes:28400-index*3900,comments:1620-index*210,favorites:5380-index*670,shares:2140-index*280,insightTags:['热点',index%3?'轻松快乐':'好奇','共鸣']};});
  const samples=ipTrendSamples;
- return `<section class="ip-trend-top"><header><div><span>TOP 4 CONTENT</span><h2>“${E(word)}” 热度最高视频</h2></div></header><div class="ip-grid ip-trend-card-grid">${samples.map(c=>ipCardHTML(c,true)).join('')}</div></section>`;
+ return `<section class="ip-trend-top"><header><div><span></span><h2>“${E(word)}” 热度最高视频</h2></div></header><div class="ip-grid ip-trend-card-grid">${samples.map(c=>ipCardHTML(c,true)).join('')}</div></section>`;
 }
 function renderTrendInsights(host=$('#view')){
  const type=ipTrendType,rows=ipTrendRows();IS.trendView='cloud';
