@@ -1,4 +1,4 @@
-#app.inspiration-page{grid-template-columns:238px minmax(0,1fr)}
+repeat(3,minmax(0,1fr))#app.inspiration-page{grid-template-columns:238px minmax(0,1fr)}
 .inspiration-page #details{display:none}.inspiration-page.show-details #details{display:flex;position:fixed;right:14px;top:18px;bottom:18px;width:310px;z-index:30;box-shadow:-15px 0 50px #254a8930}
 .inspiration-page #view{padding:27px 30px 40px}.ip-page{max-width:1550px;margin:auto}
 .ip-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:22px}.ip-heading .eyebrow{font-size:9px;letter-spacing:2px;color:#849bc1}.ip-heading h1{font-size:24px;margin:10px 0 7px;color:#294e82}.ip-heading p{font-size:12px;color:#6f85a7;margin:0}.ip-heading>button{font-size:12px;padding:12px 16px}
