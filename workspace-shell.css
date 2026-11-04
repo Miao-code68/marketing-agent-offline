@@ -189,7 +189,7 @@
 @media(max-width:700px){.wb-expert-detail-shell>header,.wb-expert-detail-shell>main,.wb-expert-detail-shell>footer{padding-left:18px;padding-right:18px}.wb-expert-detail-summary{font-size:12px}}
 
 /* Compact expert cards: the full card highlights, while the chat action stays top-right. */
-.wb-expert-card{min-height:164px;background:var(--ac-panel)}
+.wb-expert-card{min-height:132px;background:var(--ac-panel)}
 .wb-expert-card:hover,.wb-expert-card:focus-within{border-color:color-mix(in srgb,var(--release-accent) 58%,var(--ac-border));background:color-mix(in srgb,var(--release-accent) 5%,var(--ac-panel));box-shadow:0 15px 38px color-mix(in srgb,var(--release-accent) 16%,transparent)}
 .wb-expert-card-actions{position:absolute!important;z-index:3!important;top:16px;right:16px}
 .wb-expert-main,.wb-expert-tags{position:relative;z-index:2;pointer-events:none}
